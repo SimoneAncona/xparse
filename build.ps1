@@ -1,4 +1,6 @@
-mkdir build
+if (-not (Test-Path build/)) {
+    mkdir build
+}
 Set-Location build
 cmake ../
 $vs = (Get-CimInstance MSFT_VSInstance).InstallLocation[0]

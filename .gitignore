@@ -414,3 +414,5 @@ build/
 *.vcxproj
 *.vcxproj.filters
 *.sln
+
+.vscode
