@@ -1,3 +1,14 @@
+/**
+ * @file json.hh
+ * @author Simone Ancona
+ * @brief A JSON parser for C++
+ * @version 1.0
+ * @date 2023-07-14
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
+
 #include <string>
 #include <map>
 #include <stdexcept>
@@ -28,6 +39,10 @@ namespace Jpp
         END,
     };
 
+    /**
+     * @brief The Json class allows to parse a json string
+     * 
+     */
     class Json
     {
     private:
@@ -40,20 +55,107 @@ namespace Jpp
         Json(std::map<std::string, Json>, json_type_t);
         Json(std::any, json_type_t);
         ~Json();
+
+        /**
+         * @brief Get the type object
+         * 
+         * @return json_type_t 
+         * @since v1.0
+         */
         json_type_t get_type();
+
+        /**
+         * @brief Get the value object
+         * 
+         * @return std::any 
+         * @since v1.0
+         */
         std::any get_value();
+
+        /**
+         * @brief Check if the JSON value is an array
+         * 
+         * @return true 
+         * @return false 
+         * @since v1.0
+         */
         bool is_array();
+
+        /**
+         * @brief Check if the JSON value is an object
+         * 
+         * @return true 
+         * @return false 
+         * @since v1.0
+         */
         bool is_object();
+
+        /**
+         * @brief Check if the JSON is an atomic string value
+         * 
+         * @return true 
+         * @return false 
+         * @since v1.0
+         */
         bool is_string();
+
+        /**
+         * @brief Check if the JSON is an atomic boolean value
+         * 
+         * @return true 
+         * @return false 
+         * @since v1.0
+         */
         bool is_boolean();
+
+        /**
+         * @brief Check if the JSON is an atomic double value
+         * 
+         * @return true 
+         * @return false 
+         * @since v1.0
+         */
         bool is_number();
+
+        /**
+         * @brief Parse a JSON string
+         * @since v1.0
+         */
         void parse(std::string);
+
+        /**
+         * @brief Get the children object
+         * 
+         * @return std::map<std::string, Json> 
+         * @since v1.0
+         */
         std::map<std::string, Json> get_children();
+
+        /**
+         * @brief Access to a position of the array
+         * @example 
+         *  Jpp::Json json;
+         *  json.parse("[0, 1, 2, 3]");
+         *  json[0] // returns an any value
+         * @return Json& 
+         * @since v1.0
+         */
         Json &operator[](size_t);
+
+        /**
+         * @brief Access to a value of the object with the given property name
+         * 
+         * @return Json& 
+         * @since v1.0
+         */
         Json &operator[](std::string);
+
+        /**
+         * @brief Convert the JSON object to its JSON representation.
+         * 
+         * @return std::string 
+         */
         std::string to_string();
-        template <typename T>
-        T &get_atomic();
     };
 
     void trim_string(std::string &);

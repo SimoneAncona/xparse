@@ -74,12 +74,6 @@ Jpp::Json &Jpp::Json::operator[](std::string property)
     return this->children.at(property);
 }
 
-template <typename T>
-T &Jpp::Json::get_atomic()
-{
-    return this->value;
-}
-
 void Jpp::Json::parse(std::string json_string)
 {
     trim_string(json_string);
