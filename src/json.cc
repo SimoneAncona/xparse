@@ -200,11 +200,12 @@ std::map<std::string, Jpp::Json> Jpp::parse_object(std::string str, size_t &inde
         ++index;
 
         Jpp::skip_white_spaces(str, index);
+        
+        object.insert(std::pair<std::string, Jpp::Json>(current_property, current_value));
 
         if (next == Jpp::Token::OBJECT_END)
             return object;
 
-        object.insert(std::pair<std::string, Jpp::Json>(current_property, current_value));
     }
 }
 
@@ -258,12 +259,12 @@ std::map<std::string, Jpp::Json> Jpp::parse_array(std::string str, size_t &index
         ++index;
 
         Jpp::skip_white_spaces(str, index);
+        
+        object.insert(std::pair<std::string, Jpp::Json>(std::to_string(current_index), current_value));
+        ++current_index;
 
         if (next == Jpp::Token::ARRAY_END)
             return object;
-
-        object.insert(std::pair<std::string, Jpp::Json>(std::to_string(current_index), current_value));
-        ++current_index;
     }
 }
 
@@ -413,8 +414,8 @@ std::string Jpp::json_object_to_string(Jpp::Json json)
         str += ", ";
     }
 
-    str += "\"" + it->first + "\":";
-    str += it->second.to_string();
+    str += "\"" + std::prev(children.end())->first + "\":";
+    str += std::prev(children.end())->second.to_string();
 
     return str + "}";
 }
@@ -431,7 +432,7 @@ std::string Jpp::json_array_to_string(Jpp::Json json)
         str += ",";
     }
 
-    str += it->second.to_string();
+    str += std::prev(children.end())->second.to_string();
 
     return str + "]";
 }
