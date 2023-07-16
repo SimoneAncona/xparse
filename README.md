@@ -218,7 +218,7 @@ That expression doesn't match with:
 
 #### Spaces in Rule Expression Language
 
-If not specified, spaces can be evaluated as constant terminal or ignored. Let's see the difference
+If not specified, spaces can be evaluated as constant terminal or ignored. Let's see the difference:
 ```
 "hello world<letter{4}> <number{6}>"
       ┃                ┃
