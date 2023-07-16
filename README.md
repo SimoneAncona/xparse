@@ -114,7 +114,7 @@ User-defined terminals are defined in the JSON grammar file under the `terminals
 
 >NOTE: regular expressions are strings, in order to represent the expression `/[^\S\r\n]/` you must write `"[^\\S\\r\\n]"`.
 
-An user-defined terminal could be like the following.
+A user-defined terminal could be like the following.
 ```json
 {
     "terminals": [
