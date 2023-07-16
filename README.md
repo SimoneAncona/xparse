@@ -215,3 +215,33 @@ That expression can match:
 That expression doesn't match with:
 - `Foreach(el in els)`.
 - `foreach(elinels)`.
+
+#### Spaces in Rule Expression Language
+
+If not specified, spaces can be evaluated as constant terminal or ignored. Let's see the difference
+```
+"hello world<letter{4}> <number{6}>"
+      ┃                ┃
+      ┃                ┃
+      ┗━━━━━━━━━━━━━━━━┻━━ These spaces are constant terminals
+
+"[b]hello world<letter{4}> <number{6}>"
+         ┃                ┃
+         ┃                ┗ This space will be ignored
+         ┗ This is space is a constant terminal
+
+"[b]hello <identifier> world"
+         ┃            ┃
+         ┃            ┃
+         ┗━━━━━━━━━━━━┻━━ These spaces will be ignored
+         You must add <space> even if the b flag is set
+         This is because 'hello' and 'world' can be seen 
+         as identifiers and 'b' does not guarantee that 
+         there are no spaces
+
+"[B]hello <identifier> world"
+         ┃            ┃
+         ┃            ┃
+         ┗━━━━━━━━━━━━┻━━ These spaces will be ignored
+         However the 'B' flag 
+```
