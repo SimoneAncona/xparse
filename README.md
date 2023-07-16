@@ -110,11 +110,11 @@ There are 10 built-in terminals:
 
 #### User-defined Terminal
 
-User-defined terminals are defined in the JSON grammar file under the `terminals` property. A terminal is defined by specifying the name and the ECMAScript regular expression
+User-defined terminals are defined in the JSON grammar file under the `terminals` property. A terminal is defined by specifying the name and the ECMAScript regular expression.
 
->NOTE: regular expressions are strings, in order to represent the expression `/[^\S\r\n]/` you must write `"[^\\S\\r\\n]"`
+>NOTE: regular expressions are strings, in order to represent the expression `/[^\S\r\n]/` you must write `"[^\\S\\r\\n]"`.
 
-An user-defined terminal could be like the following
+An user-defined terminal could be like the following.
 ```json
 {
     "terminals": [
@@ -125,7 +125,7 @@ An user-defined terminal could be like the following
     ]
 }
 ```
-> NOTE: The order in which they are placed in the array indicates the hierarchy, the topmost terminals will be parsed first
+> NOTE: The order in which they are placed in the array indicates the hierarchy, the topmost terminals will be parsed first.
 
 ### Rules
 
@@ -143,22 +143,22 @@ Each rule has a name and a set of expressions which specify the syntax.
     ]
 }
 ```
-> NOTE: The order in which rules are placed in the array indicates a reverse hierarchy, those below are parsed first
+> NOTE: The order in which rules are placed in the array indicates a reverse hierarchy, those below are parsed first.
 
 ### Rule Expression Language
 
 The rule expression language allows you to specify the syntax of a rule, there are 3 elements in the rule expression language:
 - Constant terminals: are used to define strings or sequences of characters that must match exactly in order to form a valid expression or sentence.
-- References: references to other rules or terminals, references are delimited by `<>`
-- Flags: flags are always specified at the beginning and are delimited by `[]`
+- References: references to other rules or terminals, references are delimited by `<>`.
+- Flags: flags are always specified at the beginning and are delimited by `[]`.
 
 #### Constant Terminals
 
-As mentioned above, constant terminals tells the parser to match exactly the character sequence. For example
+As mentioned above, constant terminals tells the parser to match exactly the character sequence. For example:
 ```json
 "[b]if(<condition>)"
 ```
-In this expression, `if` is a constant terminal and tells the parser to match exactly the string "if"
+In this expression, `if` is a constant terminal and tells the parser to match exactly the string "if".
 
 #### References
 
@@ -173,11 +173,11 @@ Using the previous example:
 #### Quantifiers
 
 A reference can be quantified. There are 5 quantifiers:
-- `?`: zero or 1
-- `*`: zero or more
-- `+`: 1 or more
-- `{x}`: exactly x of
-- `{x:y}`: a range from x to y (included)
+- `?`: zero or 1.
+- `*`: zero or more.
+- `+`: 1 or more.
+- `{x}`: exactly x of.
+- `{x:y}`: a range from x to y (included).
 
 Quantifiers are placed at the end of the reference like this:
 ```json
@@ -198,10 +198,10 @@ Flags are specified at the beginning of the expression and can change how the ex
 There are 4 flags:
 - `b` for **b**oundary: that flag allows you to not specify spaces between different terminals and terminals, rule references and other rules or terminals and rule references.
 - `B` for **b**oundary: same as `b` with the difference that `B` guarantees that there is at least 1 space of gap.
-> NOTE: you cannot specify both `b` and `B` flags. The `b` flag doesn't work between constant terminals and references whose regular expression also includes the constant terminal
+> NOTE: you cannot specify both `b` and `B` flags. The `b` flag doesn't work between constant terminals and references whose regular expression also includes the constant terminal.
 - `i` for case-**i**nsesitive: all constant terminals are case insensitive.
 - `I` for case-**i**nsesitive: all characters of a constant terminal are lower case or upper case, not a mix.
-> NOTE: you cannot specify both `i` and `I` flags
+> NOTE: you cannot specify both `i` and `I` flags.
 
 Example:
 ```json
@@ -209,9 +209,9 @@ Example:
 ```
 
 That expression can match:
-- `FOREACH (el in els)`
-- `foreach(  el  IN  els)`
+- `FOREACH (el in els)`.
+- `foreach(  el  IN  els)`.
 
 That expression doesn't match with:
-- `Foreach(el in els)`
-- `foreach(elinels)`
+- `Foreach(el in els)`.
+- `foreach(elinels)`.
