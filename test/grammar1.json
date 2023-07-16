@@ -4,10 +4,15 @@
     "atomic": [
         {
             "name": "string",
-            "regex": "\""
+            "regex": "\".*\""
         }
     ],
     "rules": [
-
+        {
+            "name": "stringDefinition",
+            "expressions": [
+                "def <string><space?>;"
+            ]
+        }
     ]
 }
