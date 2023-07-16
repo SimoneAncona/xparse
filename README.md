@@ -245,4 +245,9 @@ If not specified, spaces can be evaluated as constant terminal or ignored. Let's
           However the 'b' flag ensures that there is at 
           least one space between constant terminals and
           references.
+
+"[b]hello <identifier> world"
+         ┃            ┃
+         ┃            ┃
+         ┗━━━━━━━━━━━━┻━━ These spaces will not be ignored
 ```
