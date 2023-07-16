@@ -96,7 +96,7 @@ A terminal is defined by a name and a regular expression, except for those const
 
 #### Predefined Terminal Values
 
-There are 8 built-in terminals:
+There are 10 built-in terminals:
 - `integer`: that is equivalent to `[-|+]?\d+` regular expression.
 - `identifier`: that is equivalent to `[_a-zA-Z][_a-zA-Z0-9]*`.
 - `real`: that is equivalent to `[+|-]?\d+(\.\d+)?`
@@ -105,6 +105,8 @@ There are 8 built-in terminals:
 - `digit`: equivalent to `[0-9]`
 - `hexDigit`: equivalent to `[0-9a-fA-F]`
 - `octalDigit`: equivalent to `[0-7]`
+- `space`: equivalent to `[^\S\r\n]`
+- `newLine`: equivalent to `\r?\n`
 
 #### User-defined Terminal
 
@@ -112,7 +114,15 @@ User-defined terminals are defined in the JSON grammar file under the `terminals
 ```json
 {
     "terminals": [
-        
+        {
+            "name": "binaryNumber",
+            "regex": "[0|1]+"
+        }
     ]
 }
-``` 
+```
+> NOTE: The order in which they are placed in the array indicates the hierarchy, the topmost terminals will be parsed first
+
+### Rules
+
+A rule define the syntax of the language and specify how elements of the language are combined

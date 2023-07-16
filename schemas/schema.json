@@ -20,7 +20,7 @@
                         "type": "string",
                         "minLength": 2,
                         "not": {
-                            "value": ["identifier", "alnum", "digit", "hexDigit", "octalDigit", "integer", "real", "alpha"]
+                            "value": ["identifier", "alnum", "digit", "hexDigit", "octalDigit", "integer", "real", "alpha", "space", "newLine"]
                         }
                     },
                     "regex": {
