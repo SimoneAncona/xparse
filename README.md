@@ -197,7 +197,7 @@ In this example we match all strings that starts with "4letters_or_5num:" follow
 Flags are specified at the beginning of the expression and can change how the expression is evaluated.  
 There are 4 flags:
 - `s` for ignore **s**paces: if this flag is set, every space between different terminals and terminals, rule references and other rules or terminals and rule references, will be ignored and not evaluated as a constant terminal.
-- `b` for **b**oundary: this flag guarantees that there is at least 1 space of gap between terminals or rules with same expression.
+- `b` for **b**oundary: this flag guarantees that there is at least 1 space of gap between terminals or rules with same expressions or regular expressions.
 - `i` for case-**i**nsesitive: all constant terminals are case insensitive.
 - `I` for case-**i**nsesitive: all characters of a constant terminal are lower case or upper case, not a mix.
 > NOTE: you cannot specify both `i` and `I` flags.
