@@ -204,7 +204,7 @@ There are 4 flags:
 
 Example:
 ```json
-"[Ib]foreach<space*>(<identifier> in <identifier>)"
+"[Isb]foreach<space*>(<identifier> in <identifier>)"
 ```
 
 That expression can match:
