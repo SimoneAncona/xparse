@@ -223,12 +223,12 @@ If not specified, spaces can be evaluated as constant terminal or ignored. Let's
 "hello world<letter{4}> <number{6}>"
       ┃                ┃
       ┃                ┃
-      ┗━━━━━━━━━━━━━━━━┻━━ These spaces are constant terminals
+      ┗━━━━━━━━━━━━━━━━┻━━ These spaces are constant terminals.
 
 "[b]hello world<letter{4}> <number{6}>"
          ┃                ┃
-         ┃                ┗ This space will be ignored
-         ┗ This is space is a constant terminal
+         ┃                ┗ This space will be ignored.
+         ┗ This is space is a constant terminal.
 
 "[b]hello <identifier> world"
          ┃            ┃
@@ -237,7 +237,7 @@ If not specified, spaces can be evaluated as constant terminal or ignored. Let's
          You must add <space> even if the b flag is set
          This is because 'hello' and 'world' can be seen 
          as identifiers and 'b' does not guarantee that 
-         there are no spaces
+         there are no spaces.
 
 "[B]hello <identifier> world"
          ┃            ┃
@@ -245,5 +245,5 @@ If not specified, spaces can be evaluated as constant terminal or ignored. Let's
          ┗━━━━━━━━━━━━┻━━ These spaces will be ignored
          However the 'B' flag ensures that there is at 
          least one space between constant terminals and
-         references
+         references.
 ```
