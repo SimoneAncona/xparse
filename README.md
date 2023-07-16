@@ -189,7 +189,7 @@ The example above specify to match a string that starts with "4letters:" and the
 
 References can be alternated, alternate matches are represented using the `|` character. Each alternative represents a different way to match a part of the expression. For example:
 ```json
-"4letters_or_5num:<alpha{4}|digit{5}>
+"4letters_or_5num:<alpha{4}|digit{5}>"
 ```
 In this example we match all strings that starts with "4letters_or_5num:" followed by 4 alphabetic characters or 5 decimal digits.
 
