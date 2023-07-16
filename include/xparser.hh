@@ -13,14 +13,35 @@
 
 #include "jpp.hh"
 #include "ast.hh"
+#include "rel.hh"
 #include <regex>
+#include <string>
+#include <vector>
+#include <fstream>
 
 namespace Xpp
 {
+    struct Rule
+    {
+        std::string name;
+        std::vector<RuleExpression> expressions;
+    };
+
+    struct TerminalRule
+    {
+        std::string name;
+        std::string regex;
+    };
+
     class Parser
     {
     private:
         Jpp::Json grammar;
+        std::vector<Rule> rules;
+        std::vector<TerminalRule> terminals;
+
+        void generate_rules();
+        std::string get_string_from_file();
 
     public:
         /**
@@ -40,6 +61,12 @@ namespace Xpp
          * 
          */
         Parser(std::string);
+
+        /**
+         * @brief Construct a new Parser object specifying the input file stream
+         * 
+         */
+        Parser(std::ifstream);
 
         /**
          * @brief Destroy the Parser object

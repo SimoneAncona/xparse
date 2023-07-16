@@ -12,26 +12,26 @@
 
 Xpp::AST::AST()
 {
-    this->atomic = false;
+    this->terminal = false;
 }
 
 Xpp::AST::AST(std::string rule_name, std::vector<AST> children)
 {
-    this->atomic = false;
+    this->terminal = false;
     this->rule_name = rule_name;
     this->children = children;
 }
 
-Xpp::AST::AST(std::string rule_name, std::string atomic_value)
+Xpp::AST::AST(std::string rule_name, std::string terminal_value)
 {
-    this->atomic = true;
+    this->terminal = true;
     this->rule_name = rule_name;
-    this->value = atomic_value;
+    this->value = terminal_value;
 }
 
-bool Xpp::AST::is_atomic()
+bool Xpp::AST::is_terminal()
 {
-    return atomic;
+    return terminal;
 }
 
 std::string Xpp::AST::get_rule_name()
@@ -41,15 +41,15 @@ std::string Xpp::AST::get_rule_name()
 
 std::string Xpp::AST::get_value()
 {
-    if (!atomic)
-        throw std::runtime_error("Cannot get the value of a non-atomic node");
+    if (!terminal)
+        throw std::runtime_error("Cannot get the value of a non-terminal node");
     return value;
 }
 
 std::vector<Xpp::AST> &Xpp::AST::get_children()
 {
-    if (atomic)
-        throw std::runtime_error("Cannot get the children of an atomic node");
+    if (terminal)
+        throw std::runtime_error("Cannot get the children of an terminal node");
     return children;
 }
 

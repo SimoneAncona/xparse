@@ -2,7 +2,7 @@
  * @file rel.hh
  * @author Simone Ancona
  * @brief Rule Expression Language
- * @version 0.1
+ * @version 1.0
  * @date 2023-07-16
  * 
  * @copyright Copyright (c) 2023
@@ -68,6 +68,7 @@ namespace Xpp
     public:
         RuleExpression() = default;
         ~RuleExpression() = default;
+        RuleExpression(std::string);
 
         bool is_boundary_set();
         bool is_ignore_spaces_set();

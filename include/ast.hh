@@ -13,6 +13,7 @@
 #include <string>
 #include <vector>
 #include <stdexcept>
+#include "jpp.hh"
 
 namespace Xpp
 {
@@ -21,7 +22,7 @@ namespace Xpp
     private:
         std::vector<AST> children;
         std::string rule_name;
-        bool atomic;
+        bool terminal;
         std::string value;
 
     public:
@@ -38,7 +39,7 @@ namespace Xpp
         AST(std::string, std::vector<AST>);
 
         /**
-         * @brief Construct a new AST object specifying the rule name and the atomic value
+         * @brief Construct a new AST object specifying the rule name and the terminal value
          * 
          */
         AST(std::string, std::string);
@@ -55,7 +56,7 @@ namespace Xpp
          * @return true 
          * @return false 
          */
-        bool is_atomic();
+        bool is_terminal();
 
         /**
          * @brief Get the rule name
@@ -65,7 +66,7 @@ namespace Xpp
         std::string get_rule_name();
 
         /**
-         * @brief Get the atomic value
+         * @brief Get the terminal value
          * 
          * @return std::string 
          */
@@ -84,6 +85,13 @@ namespace Xpp
          * @return AST& 
          */
         AST &operator[](size_t);
+
+        /**
+         * @brief Convert the AST into a JSON object
+         * 
+         * @return Jpp::Json 
+         */
+        Jpp::Json to_json();
 
         std::vector<AST>::iterator begin();
 
