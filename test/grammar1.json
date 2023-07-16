@@ -1,4 +1,4 @@
 {
-    "$schema": "https://github.com/SimoneAncona/xparser/blob/main/json/schema.json"
-    
+    "$schema": "https://raw.githubusercontent.com/SimoneAncona/xparser/main/json/schema.json",
+    "atomic": "hi"
 }
