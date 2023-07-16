@@ -1,7 +1,7 @@
 {
     "$schema": "https://raw.githubusercontent.com/SimoneAncona/xparser/main/schemas/schema.json",
     "name": "MyGrammar",
-    "atomic": [
+    "terminals": [
         {
             "name": "string",
             "regex": "\".*\""

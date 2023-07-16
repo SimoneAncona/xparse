@@ -21,9 +21,9 @@ All JSON Xparser grammar files must have the following structure:
 ```json
 {
     "name": "nameOfYourGrammar",
-    "atomic": [
+    "terminals": [
         {
-            "name": "nameOfAtomicRule",
+            "name": "nameOfTerminalRule",
             "regex": "ECMAScript regular expression"
         }
     ],
@@ -84,3 +84,35 @@ std::string read_json_file(std::string filename)
 
 <a name="grammars"></a>
 ## Grammars
+
+### Terminal Values
+
+A terminal is always a final node in the AST, a terminal value can be a literal number, a literal string or an identifier. There are 3 types of terminal values:
+- Predefined: terminals that are built-in such as `integer` or `identifier`
+- User-defined: terminals that are defined in the `terminals` property of the grammar JSON file.
+- Constant: terminals that are defined in rule expressions, we will see later what this means.
+
+A terminal is defined by a name and a regular expression, except for those constants.
+
+#### Predefined Terminal Values
+
+There are 8 built-in terminals:
+- `integer`: that is equivalent to `[-|+]?\d+` regular expression.
+- `identifier`: that is equivalent to `[_a-zA-Z][_a-zA-Z0-9]*`.
+- `real`: that is equivalent to `[+|-]?\d+(\.\d+)?`
+- `alpha`: that is equivalent to `[a-zA-Z]`
+- `alnum`: equivalent to `[a-zA-Z0-9]`
+- `digit`: equivalent to `[0-9]`
+- `hexDigit`: equivalent to `[0-9a-fA-F]`
+- `octalDigit`: equivalent to `[0-7]`
+
+#### User-defined Terminal
+
+User-defined terminals are defined in the JSON grammar file under the `terminals` property. A terminal is defined by specifying the name and the ECMAScript regular expression like this:
+```json
+{
+    "terminals": [
+        
+    ]
+}
+``` 

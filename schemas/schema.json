@@ -8,20 +8,23 @@
             "minLength": 2,
             "description": "The name of the grammar"
         },
-        "atomic": {
-            "description": "List of all atomic values",
+        "terminals": {
+            "description": "List of all terminal values",
             "type": "array",
             "items": {
-                "description": "An atomic value",
+                "description": "A terminal value",
                 "type": "object",
                 "properties": {
                     "name": {
-                        "description": "Name of the atomic rule",
+                        "description": "Name of the terminal rule",
                         "type": "string",
-                        "minLength": 2
+                        "minLength": 2,
+                        "not": {
+                            "value": ["identifier", "alnum", "digit", "hexDigit", "octalDigit", "integer", "real", "alpha"]
+                        }
                     },
                     "regex": {
-                        "description": "The ECMAScript regex of the atomic rule",
+                        "description": "The ECMAScript regex of the terminal rule",
                         "type": "string",
                         "minLength": 1
                     }
@@ -54,7 +57,7 @@
         }
     },
     "required": [
-        "atomic",
+        "terminals",
         "name",
         "rules"
     ]
