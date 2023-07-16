@@ -99,14 +99,14 @@ A terminal is defined by a name and a regular expression, except for those const
 There are 10 built-in terminals:
 - `integer`: that is equivalent to `[-|+]?\d+` regular expression.
 - `identifier`: that is equivalent to `[_a-zA-Z][_a-zA-Z0-9]*`.
-- `real`: that is equivalent to `[+|-]?\d+(\.\d+)?`
-- `alpha`: that is equivalent to `[a-zA-Z]`
-- `alnum`: equivalent to `[a-zA-Z0-9]`
-- `digit`: equivalent to `[0-9]`
-- `hexDigit`: equivalent to `[0-9a-fA-F]`
-- `octalDigit`: equivalent to `[0-7]`
-- `space`: equivalent to `[^\S\r\n]`
-- `newLine`: equivalent to `\r?\n`
+- `real`: that is equivalent to `[+|-]?\d+(\.\d+)?`.
+- `alpha`: that is equivalent to `[a-zA-Z]`.
+- `alnum`: equivalent to `[a-zA-Z0-9]`.
+- `digit`: equivalent to `[0-9]`.
+- `hexDigit`: equivalent to `[0-9a-fA-F]`.
+- `octalDigit`: equivalent to `[0-7]`.
+- `space`: equivalent to `[^\S\r\n]`.
+- `newLine`: equivalent to `\r?\n`.
 
 #### User-defined Terminal
 
