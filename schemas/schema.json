@@ -1,5 +1,6 @@
 {
     "$schema": "http://json-schema.org/draft-04/schema",
+    "$id": "https://raw.githubusercontent.com/SimoneAncona/xparser/main/schemas/schema.json",
     "type": "object",
     "properties": {
         "name": {
