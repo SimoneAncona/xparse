@@ -31,7 +31,7 @@ All JSON Xparser grammar files must have the following structure:
         {
             "name": "ruleName",
             "expressions": [
-                "[B]def<identifier>():"
+                "[b]def<identifier>():"
             ]
         }
     ]
@@ -137,7 +137,7 @@ Each rule has a name and a set of expressions which specify the syntax.
         {
             "name": "variableDeclaration",
             "expressions": [
-                "[B]var<identifier><newLine>"
+                "[b]var<identifier><newLine>"
             ]
         }
     ]
@@ -196,16 +196,15 @@ In this example we match all strings that starts with "4letters_or_5num:" follow
 #### Flags
 Flags are specified at the beginning of the expression and can change how the expression is evaluated.  
 There are 4 flags:
-- `b` for **b**oundary: that flag allows you to not specify spaces between different terminals and terminals, rule references and other rules or terminals and rule references.
-- `B` for **b**oundary: same as `b` with the difference that `B` guarantees that there is at least 1 space of gap.
-> NOTE: you cannot specify both `b` and `B` flags. The `b` flag doesn't work between constant terminals and references whose regular expression also includes the constant terminal.
+- `s` for ignore **s**paces: if this flag is set, every space between different terminals and terminals, rule references and other rules or terminals and rule references, will be ignored and not evaluated as a constant terminal.
+- `b` for **b**oundary: this flag guarantees that there is at least 1 space of gap between terminals or rules with same expression.
 - `i` for case-**i**nsesitive: all constant terminals are case insensitive.
 - `I` for case-**i**nsesitive: all characters of a constant terminal are lower case or upper case, not a mix.
 > NOTE: you cannot specify both `i` and `I` flags.
 
 Example:
 ```json
-"[Ib]foreach<space*>(<identifier><space+>in<space+><identifier>)"
+"[Ib]foreach<space*>(<identifier> in <identifier>)"
 ```
 
 That expression can match:
@@ -225,25 +224,25 @@ If not specified, spaces can be evaluated as constant terminal or ignored. Let's
       ┃                ┃
       ┗━━━━━━━━━━━━━━━━┻━━ These spaces are constant terminals.
 
-"[b]hello world<letter{4}> <number{6}>"
+"[s]hello world<letter{4}> <number{6}>"
          ┃                ┃
          ┃                ┗ This space will be ignored.
-         ┗ This is space is a constant terminal.
+         ┗ This is space is a part of the constant terminal.
 
-"[b]hello <identifier> world"
+"[s]hello <identifier> world"
          ┃            ┃
          ┃            ┃
          ┗━━━━━━━━━━━━┻━━ These spaces will be ignored
-         You must add <space> even if the b flag is set
-         This is because 'hello' and 'world' can be seen 
-         as identifiers and 'b' does not guarantee that 
-         there are no spaces.
+         You must add <space> this is because 'hello' 
+         and 'world' can be seen as identifiers and 
+         's' does not guarantee that there are no 
+         spaces.
 
-"[B]hello <identifier> world"
-         ┃            ┃
-         ┃            ┃
-         ┗━━━━━━━━━━━━┻━━ These spaces will be ignored
-         However the 'B' flag ensures that there is at 
-         least one space between constant terminals and
-         references.
+"[sb]hello <identifier> world"
+          ┃            ┃
+          ┃            ┃
+          ┗━━━━━━━━━━━━┻━━ These spaces will be ignored
+          However the 'b' flag ensures that there is at 
+          least one space between constant terminals and
+          references.
 ```
