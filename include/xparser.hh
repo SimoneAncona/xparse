@@ -13,6 +13,7 @@
 
 #include "jpp.hh"
 #include "ast.hh"
+#include <regex>
 
 namespace Xpp
 {
@@ -22,10 +23,35 @@ namespace Xpp
         Jpp::Json grammar;
 
     public:
+        /**
+         * @brief Construct a new Parser object
+         * 
+         */
         Parser() = default;
+
+        /**
+         * @brief Construct a new Parser object specifying the grammar with a JSON object
+         * 
+         */
         Parser(Jpp::Json);
+        
+        /**
+         * @brief Construct a new Parser object specifying the grammar with a JSON string
+         * 
+         */
         Parser(std::string);
 
-        AST generate_ast();
+        /**
+         * @brief Destroy the Parser object
+         * 
+         */
+        ~Parser() = default;
+
+        /**
+         * @brief Get the ast object
+         * 
+         * @return AST 
+         */
+        AST get_ast();
     };
 };
