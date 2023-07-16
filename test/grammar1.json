@@ -1,3 +1,13 @@
 {
-    "$schema": "https://raw.githubusercontent.com/SimoneAncona/xparser/main/json/schema.json"
+    "$schema": "https://raw.githubusercontent.com/SimoneAncona/xparser/main/schemas/schema.json",
+    "name": "MyGrammar",
+    "atomic": [
+        {
+            "name": "string",
+            "regex": "\""
+        }
+    ],
+    "rules": [
+
+    ]
 }

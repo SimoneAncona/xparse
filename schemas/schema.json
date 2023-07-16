@@ -23,7 +23,7 @@
                     "regex": {
                         "description": "The ECMAScript regex of the atomic rule",
                         "type": "string",
-                        "minLength": 2
+                        "minLength": 1
                     }
                 }
             }
@@ -43,7 +43,7 @@
                     "expressions": {
                         "type": "array",
                         "description": "List of all rule expressions",
-                        "minLength": 1,
+                        "minItems": 1,
                         "items": {
                             "type": "string",
                             "minLength": 2
