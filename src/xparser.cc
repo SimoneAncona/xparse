@@ -20,7 +20,7 @@ Xpp::Parser::Parser(std::string grammar)
     this->grammar.parse(grammar);
 }
 
-Xpp::AST Xpp::Parser::get_ast()
+Xpp::AST Xpp::Parser::generate_ast(std::string)
 {
 
 }

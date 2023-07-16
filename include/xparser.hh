@@ -52,6 +52,6 @@ namespace Xpp
          * 
          * @return AST 
          */
-        AST get_ast();
+        AST generate_ast(std::string);
     };
 };
