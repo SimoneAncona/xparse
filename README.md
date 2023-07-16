@@ -243,5 +243,7 @@ If not specified, spaces can be evaluated as constant terminal or ignored. Let's
          ┃            ┃
          ┃            ┃
          ┗━━━━━━━━━━━━┻━━ These spaces will be ignored
-         However the 'B' flag 
+         However the 'B' flag ensures that there is at 
+         least one space between constant terminals and
+         references
 ```
