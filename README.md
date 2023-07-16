@@ -31,7 +31,7 @@ All JSON Xparser grammar files must have the following structure:
         {
             "name": "ruleName",
             "expressions": [
-                "[b]def<identifier>():"
+                "[B]def<identifier>():"
             ]
         }
     ]
