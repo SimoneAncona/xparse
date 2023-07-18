@@ -157,9 +157,15 @@ The rule expression language allows you to specify the syntax of a rule, there a
 
 As mentioned above, constant terminals tells the parser to match exactly the character sequence. For example:
 ```json
-"[b]if(<condition>)"
+"[b]if<space*>(<condition>)"
 ```
-In this expression, `if` is a constant terminal and tells the parser to match exactly the string "if".
+In this expression, `if` is a constant terminal and tells the parser to match exactly the string "if".  
+
+To use <, [, | and other characters that have special meaning in Rule Expression Language in a constant terminal you need to use the \ character
+
+> NOTE: the escape character must in the JSON file must be written \\\\. Example:  
+❌ `"[s]def \< <identifier> \>"`  
+✔️ `"[s]def \\< <identifier> \\>"`
 
 #### References
 
@@ -167,7 +173,7 @@ A reference is a reference to another rule or terminal, that tells the parser to
 A rule can have a reference to itself provided that in the expression array there is at least one expression with only terminal references or constant terminals.  
 Using the previous example:
 ```json
-"[b]if(<condition>)"
+"[b]if<space*>(<condition>)"
 ```
 `<condition>` is a reference to a rule called condition.
 
