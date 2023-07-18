@@ -116,10 +116,14 @@ std::vector<Xpp::RuleExpression> Xpp::Parser::parse_expressions(std::map<std::st
 
 std::vector<Xpp::Token> Xpp::Parser::tokenize(std::string str)
 {
+    std::vector<Xpp::Token> tokens;
 
+    return tokens;
 }
 
 Xpp::AST Xpp::Parser::parse(std::vector<Xpp::Token> tokens)
 {
-    
+    Xpp::AST ast;
+
+    return ast;
 }

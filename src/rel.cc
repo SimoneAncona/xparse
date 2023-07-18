@@ -82,7 +82,7 @@ void Xpp::RuleExpression::parse_reference(std::string exp, size_t &index)
     std::vector<std::string> reference_names;
     size_t current_name = 0;
     bool is_alternative = false;
-    Quantifier quantifier(NONE, 0, 0);
+    Quantifier quantifier = {NONE, 0, 0};
 
     while (next != '>')
     {
@@ -136,11 +136,11 @@ Xpp::Quantifier Xpp::RuleExpression::parse_quantifier(std::string exp, size_t &i
     if ((ch = ParserTools::get_next(exp, index)) != '>')
         throw std::runtime_error("Unexpected '" + std::string(1, ch) + "' token, '>' was expected");
     if (type == '?')
-        return Quantifier(ZERO_OR_ONE, 0, 0);
+        return Quantifier{ZERO_OR_ONE, 0, 0};
     if (type == '*')
-        return Quantifier(ZERO_OR_MORE, 0, 0);
+        return Quantifier{ZERO_OR_MORE, 0, 0};
     if (type == '+')
-        return Quantifier(ONE_OR_MORE, 0, 0);
+        return Quantifier{ONE_OR_MORE, 0, 0};
 
     std::vector<std::string> values = {"", ""};
     size_t current_value = 0;
@@ -167,10 +167,15 @@ Xpp::Quantifier Xpp::RuleExpression::parse_quantifier(std::string exp, size_t &i
             throw std::runtime_error("Expected value before ':' in '{:" + values[1] + "}'");
         if (values[current_value] == "")
             throw std::runtime_error("Expected value after ':' in '{" + values[0] + ":}'");
-        return Quantifier(EXACT_RANGE, stoi(values[0]), stoi(values[1]));
+        return Quantifier{EXACT_RANGE, std::stoull(values[0]), std::stoull(values[1])};
     }
     if (values[0] == "")
         throw std::runtime_error("Expected a value after '{'");
-    return Quantifier(EXACT_VALUE, stoi(values[0]), 0);
+    return Quantifier{EXACT_VALUE, std::stoull(values[0]), 0};
 
+}
+
+void Xpp::RuleExpression::parse_constant_term(std::string exp, size_t &index)
+{
+    
 }
