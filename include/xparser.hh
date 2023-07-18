@@ -21,6 +21,8 @@
 #include <sstream>
 #include <map>
 #include <stdexcept>
+#include <regex>
+#include <stack>
 
 namespace Xpp
 {
@@ -36,18 +38,45 @@ namespace Xpp
         std::string regex;
     };
 
+    struct Token
+    {
+        TerminalRule from;
+        size_t index;
+        size_t column;
+        size_t line;
+        std::string value;
+    };
+
+    enum SyntaxErrorType
+    {
+        EXPECTED_TOKEN,
+        UNEXPECTED_TOKEN
+    };
+
+    struct SyntaxError
+    {
+        SyntaxErrorType type;
+        std::string message;
+        size_t index;
+        size_t column;
+        size_t line;
+    };
+
     class Parser
     {
     private:
         Jpp::Json grammar;
         std::vector<Rule> rules;
         std::vector<TerminalRule> terminals;
+        std::stack<SyntaxError> error_stack;
 
         void generate_from_json();
-        void generate_terminals(std::map<std::string, Jpp::Json>);
+        void generate_terminal_rules(std::map<std::string, Jpp::Json>);
         void generate_rules(std::map<std::string, Jpp::Json>);
         std::vector<RuleExpression> parse_expressions(std::map<std::string, Jpp::Json>);
         std::string get_string_from_file(std::ifstream&);
+        std::vector<Token> tokenize(std::string);
+        Xpp::AST parse(std::vector<Token>);
 
     public:
         /**
@@ -86,5 +115,19 @@ namespace Xpp
          * @return AST 
          */
         AST generate_ast(std::string);
+
+        /**
+         * @brief Get the error stack
+         * 
+         * @return std::stack<SyntaxError>& 
+         */
+        std::stack<SyntaxError> &get_error_stack();
+
+        /**
+         * @brief Get the last error
+         * 
+         * @return SyntaxError 
+         */
+        SyntaxError get_last_error();
     };
 };

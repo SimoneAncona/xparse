@@ -127,7 +127,6 @@ void Xpp::RuleExpression::parse_reference(std::string exp, size_t &index)
         return;
     }
     elements.push_back(ExpressionElement{RULE_REFERENCE, "", {ExpressionReference{reference_names[0], quantifier}}});
-
 }
 
 Xpp::Quantifier Xpp::RuleExpression::parse_quantifier(std::string exp, size_t &index)

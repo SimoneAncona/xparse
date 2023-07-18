@@ -28,8 +28,19 @@ Xpp::Parser::Parser(std::ifstream &file)
     this->generate_from_json();
 }
 
-Xpp::AST Xpp::Parser::generate_ast(std::string)
+Xpp::AST Xpp::Parser::generate_ast(std::string input_string)
 {
+    return parse(tokenize(input_string));
+}
+
+std::stack<Xpp::SyntaxError> &Xpp::Parser::get_error_stack()
+{
+    return error_stack;
+}
+
+Xpp::SyntaxError Xpp::Parser::get_last_error()
+{
+    return error_stack.top();
 }
 
 std::string Xpp::Parser::get_string_from_file(std::ifstream &file)
@@ -57,11 +68,11 @@ void Xpp::Parser::generate_from_json()
     auto terminalsArray = terminals->second.get_children();
     auto rulesArray = rules->second.get_children();
 
-    generate_terminals(terminalsArray);
+    generate_terminal_rules(terminalsArray);
     generate_rules(rulesArray);
 }
 
-void Xpp::Parser::generate_terminals(std::map<std::string, Jpp::Json> terminalsArray)
+void Xpp::Parser::generate_terminal_rules(std::map<std::string, Jpp::Json> terminalsArray)
 {
     for (auto terminal : terminalsArray)
     {
@@ -97,8 +108,7 @@ std::vector<Xpp::RuleExpression> Xpp::Parser::parse_expressions(std::map<std::st
 
     for (auto exp : expressions)
     {
-        std::string exp_string = any_cast<std::string>(exp.second.get_value());
-        parsed_expressions.push_back(Xpp::RuleExpression(exp_string));
+        parsed_expressions.push_back(Xpp::RuleExpression(any_cast<std::string>(exp.second.get_value())));
     }
 
     return parsed_expressions;
