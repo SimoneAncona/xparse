@@ -24,7 +24,6 @@ namespace Xpp
     {
         CONSTANT_TERMINAL,
         RULE_REFERENCE,
-        TERMINAL_REFERENCE,
         ALTERNATIVE
     };
 
@@ -71,6 +70,7 @@ namespace Xpp
         void parse_expression(std::string, size_t&);
         void parse_constant_term(std::string, size_t&);
         void parse_reference(std::string, size_t&);
+        Quantifier parse_quantifier(std::string, size_t&);
 
     public:
         RuleExpression() = default;
