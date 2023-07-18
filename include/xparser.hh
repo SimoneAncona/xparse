@@ -18,6 +18,9 @@
 #include <string>
 #include <vector>
 #include <fstream>
+#include <sstream>
+#include <map>
+#include <stdexcept>
 
 namespace Xpp
 {
@@ -40,8 +43,11 @@ namespace Xpp
         std::vector<Rule> rules;
         std::vector<TerminalRule> terminals;
 
-        void generate_rules();
-        std::string get_string_from_file();
+        void generate_from_json();
+        void generate_terminals(std::map<std::string, Jpp::Json>);
+        void generate_rules(std::map<std::string, Jpp::Json>);
+        std::vector<RuleExpression> parse_expressions(std::map<std::string, Jpp::Json>);
+        std::string get_string_from_file(std::ifstream&);
 
     public:
         /**
@@ -66,7 +72,7 @@ namespace Xpp
          * @brief Construct a new Parser object specifying the input file stream
          * 
          */
-        Parser(std::ifstream);
+        Parser(std::ifstream&);
 
         /**
          * @brief Destroy the Parser object

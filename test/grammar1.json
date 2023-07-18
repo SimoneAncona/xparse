@@ -3,7 +3,7 @@
     "name": "MyGrammar",
     "terminals": [
         {
-            "name": "string",
+            "name": "asdfasd",
             "regex": "\".*\""
         }
     ],
