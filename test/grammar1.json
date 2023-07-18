@@ -11,7 +11,7 @@
         {
             "name": "stringDefinition",
             "expressions": [
-                "def <string><space?>;"
+                "[sb]def <string><space?>;"
             ]
         }
     ]

@@ -67,3 +67,10 @@ std::vector<Xpp::AST>::iterator Xpp::AST::end()
 {
     return children.end();
 }
+
+Jpp::Json Xpp::AST::to_json()
+{
+    Jpp::Json json;
+
+    return json;
+}
