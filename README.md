@@ -96,7 +96,7 @@ A terminal is defined by a name and a regular expression, except for those const
 
 #### Predefined Terminal Values
 
-There are 11 built-in terminals:
+There are 12 built-in terminals:
 - `integer`: that is equivalent to `[-|+]?\d+` regular expression.
 - `identifier`: that is equivalent to `[_a-zA-Z][_a-zA-Z0-9]*`.
 - `real`: that is equivalent to `[+|-]?\d+(\.\d+)?`.
@@ -107,7 +107,8 @@ There are 11 built-in terminals:
 - `octalDigit`: equivalent to `[0-7]`.
 - `space`: equivalent to `[^\S\r\n]`.
 - `newLine`: equivalent to `\r?\n`.
-- `any`: equivalent to `.`
+- `any`: equivalent to `.`.
+- `eof`: End Of File.
 
 #### User-defined Terminal
 
@@ -138,7 +139,7 @@ Each rule has a name and a set of expressions which specify the syntax.
         {
             "name": "variableDeclaration",
             "expressions": [
-                "[b]var<identifier><newLine>"
+                "[b]var<identifier><newLine|eof>"
             ]
         }
     ]
