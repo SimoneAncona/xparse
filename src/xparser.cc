@@ -13,16 +13,19 @@
 Xpp::Parser::Parser(Jpp::Json grammar)
 {
     this->grammar = grammar;
+    this->generate_from_json();
 }
 
 Xpp::Parser::Parser(std::string grammar)
 {
     this->grammar.parse(grammar);
+    this->generate_from_json();
 }
 
 Xpp::Parser::Parser(std::ifstream &file)
 {
     this->grammar.parse(this->get_string_from_file(file));
+    this->generate_from_json();
 }
 
 Xpp::AST Xpp::Parser::generate_ast(std::string)
@@ -90,4 +93,13 @@ void Xpp::Parser::generate_rules(std::map<std::string, Jpp::Json> rulesArray)
 
 std::vector<Xpp::RuleExpression> Xpp::Parser::parse_expressions(std::map<std::string, Jpp::Json> expressions)
 {
+    std::vector<Xpp::RuleExpression> parsed_expressions;
+
+    for (auto exp : expressions)
+    {
+        std::string exp_string = any_cast<std::string>(exp.second.get_value());
+        parsed_expressions.push_back(Xpp::RuleExpression(exp_string));
+    }
+
+    return parsed_expressions;
 }

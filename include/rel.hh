@@ -11,6 +11,8 @@
 
 #include <string>
 #include <vector>
+#include <stdexcept>
+#include "ptools.hh"
 
 #define CASE_INSENSITIVE_CLEAR 0
 #define CASE_INSENSITIVE_STRICT 1
@@ -64,6 +66,11 @@ namespace Xpp
         int case_insensitive_flag;
         bool boundary_flag;
         bool ignore_spaces;
+
+        void parse_flags(std::string, size_t&);
+        void parse_expression(std::string, size_t&);
+        void parse_constant_term(std::string, size_t&);
+        void parse_reference(std::string, size_t&);
 
     public:
         RuleExpression() = default;

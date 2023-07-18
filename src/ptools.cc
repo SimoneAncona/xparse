@@ -9,3 +9,9 @@
  */
 
 #include "ptools.hh"
+
+char ParserTools::get_next(std::string str, size_t &index)
+{
+    if (index >= str.length()) return 0;
+    return str[index++];
+}

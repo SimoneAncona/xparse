@@ -9,7 +9,9 @@
  * 
  */
 
+#include <string>
+
 namespace ParserTools
 {
-
+    char get_next(std::string, size_t&);
 };
