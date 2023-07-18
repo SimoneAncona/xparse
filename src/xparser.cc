@@ -97,7 +97,7 @@ void Xpp::Parser::generate_rules(std::map<std::string, Jpp::Json> rulesArray)
         }
         catch (const std::runtime_error e)
         {
-            throw std::runtime_error("Error parsing the array of rules, go to https://github.com/SimoneAncona/xparser#define-a-grammar for more");
+            throw std::runtime_error("Error while parsing the array of rules, go to https://github.com/SimoneAncona/xparser#define-a-grammar for more: " + std::string(e.what()));
         }
     }
 }

@@ -12,7 +12,7 @@
 
 Xpp::RuleExpression::RuleExpression(std::string rule_expression)
 {
-    size_t index;
+    size_t index = 0;
     if (rule_expression.starts_with('['))
     {
         index++;
@@ -66,9 +66,9 @@ void Xpp::RuleExpression::parse_flags(std::string exp, size_t &index)
 
 void Xpp::RuleExpression::parse_expression(std::string exp, size_t &index)
 {
-    if (exp.starts_with('['))
+    if (exp[index] == '[')
         throw std::runtime_error("Unexpected '[' token. Did you mean '\\['?");
-    if (exp.starts_with('<'))
+    if (exp[index] == '<')
     {
         parse_reference(exp, index);
         return;

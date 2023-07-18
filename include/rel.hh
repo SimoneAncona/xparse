@@ -62,9 +62,9 @@ namespace Xpp
     {
     private:
         std::vector<ExpressionElement> elements;
-        int case_insensitive_flag;
-        bool boundary_flag;
-        bool ignore_spaces;
+        int case_insensitive_flag = CASE_INSENSITIVE_CLEAR;
+        bool boundary_flag = false;
+        bool ignore_spaces = false;
 
         void parse_flags(std::string, size_t&);
         void parse_expression(std::string, size_t&);
