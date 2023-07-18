@@ -163,7 +163,7 @@ In this expression, `if` is a constant terminal and tells the parser to match ex
 
 To use <, [, | and other characters that have special meaning in Rule Expression Language in a constant terminal you need to use the \ character
 
-> NOTE: the escape character must in the JSON file must be written \\\\. Example:  
+> NOTE: the escape character in the JSON file must be written \\\\. Example:  
 ❌ `"[s]def \< <identifier> \>"`  
 ✔️ `"[s]def \\< <identifier> \\>"`
 
