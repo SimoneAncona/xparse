@@ -28,29 +28,29 @@ Xpp::Parser::Parser(std::ifstream &file)
     this->generate_from_json();
 }
 
-Xpp::AST Xpp::Parser::generate_ast(std::string input_string)
+inline Xpp::AST Xpp::Parser::generate_ast(std::string input_string)
 {
     return parse(tokenize(input_string));
 }
 
-std::stack<Xpp::SyntaxError> &Xpp::Parser::get_error_stack()
+inline std::stack<Xpp::SyntaxError> &Xpp::Parser::get_error_stack()
 {
     return error_stack;
 }
 
-Xpp::SyntaxError Xpp::Parser::get_last_error()
+inline Xpp::SyntaxError Xpp::Parser::get_last_error()
 {
     return error_stack.top();
 }
 
-std::string Xpp::Parser::get_string_from_file(std::ifstream &file)
+inline std::string Xpp::Parser::get_string_from_file(std::ifstream &file)
 {
     std::stringstream buff;
     buff << file.rdbuf();
     return buff.str();
 }
 
-void Xpp::Parser::generate_from_json()
+inline void Xpp::Parser::generate_from_json()
 {
     auto children = grammar.get_children();
     auto terminals = children.find("terminals");
@@ -72,7 +72,7 @@ void Xpp::Parser::generate_from_json()
     generate_rules(rulesArray);
 }
 
-void Xpp::Parser::generate_terminal_rules(std::map<std::string, Jpp::Json> terminalsArray)
+inline void Xpp::Parser::generate_terminal_rules(std::map<std::string, Jpp::Json> terminalsArray)
 {
     for (auto terminal : terminalsArray)
     {
@@ -87,17 +87,19 @@ void Xpp::Parser::generate_terminal_rules(std::map<std::string, Jpp::Json> termi
     }
 }
 
-void Xpp::Parser::generate_rules(std::map<std::string, Jpp::Json> rulesArray)
+inline void Xpp::Parser::generate_rules(std::map<std::string, Jpp::Json> rulesArray)
 {
-    for (auto rule : rulesArray)
+    Xpp::Rule rule;
+    for (auto ruleJSON : rulesArray)
     {
         try
         {
-            this->rules.push_back(Xpp::Rule{std::any_cast<std::string>(rule.second["name"].get_value()), parse_expressions(rule.second["expressions"].get_children())});
+            rule = Xpp::Rule{std::any_cast<std::string>(ruleJSON.second["name"].get_value()), parse_expressions(ruleJSON.second["expressions"].get_children())};
+            this->rules.push_back(rule);
         }
         catch (const std::runtime_error e)
         {
-            throw std::runtime_error("Error while parsing the array of rules, go to https://github.com/SimoneAncona/xparser#define-a-grammar for more: " + std::string(e.what()));
+            throw std::runtime_error("Error while parsing the array of rules, go to https://github.com/SimoneAncona/xparser#define-a-grammar for more:\n\t" + std::string(e.what()));
         }
     }
 }

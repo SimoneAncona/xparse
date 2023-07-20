@@ -10,19 +10,53 @@
 
 #include "rel.hh"
 
+inline bool Xpp::RuleExpression::is_boundary_set()
+{
+    return this->boundary_flag;
+}
+
+inline bool Xpp::RuleExpression::is_ignore_spaces_set()
+{
+    return this->ignore_spaces;
+}
+
+inline bool Xpp::RuleExpression::is_soft_case_insensitive_set()
+{
+    return this->case_insensitive_flag == CASE_INSENSITIVE_SOFT;
+}
+
+inline bool Xpp::RuleExpression::is_strict_case_insensitive_set()
+{
+    return this->case_insensitive_flag == CASE_INSENSITIVE_STRICT;
+}
+
+inline std::vector<Xpp::ExpressionElement> &Xpp::RuleExpression::get_elements()
+{
+    return this->elements;
+}
+
+inline std::vector<Xpp::ExpressionElement>::iterator Xpp::RuleExpression::begin()
+{
+    return this->elements.begin();
+}
+
+inline std::vector<Xpp::ExpressionElement>::iterator Xpp::RuleExpression::end()
+{
+    return this->elements.end();
+}
+
 Xpp::RuleExpression::RuleExpression(std::string rule_expression)
 {
-    size_t index = 0;
     if (rule_expression.starts_with('['))
     {
         index++;
-        parse_flags(rule_expression, index);
+        parse_flags(rule_expression);
     }
     while (index < rule_expression.length())
-        parse_expression(rule_expression, index);
+        parse_expression(rule_expression);
 }
 
-void Xpp::RuleExpression::parse_flags(std::string exp, size_t &index)
+void Xpp::RuleExpression::parse_flags(std::string exp)
 {
     char next = ParserTools::get_next(exp, index);
     while (next != ']')
@@ -64,25 +98,25 @@ void Xpp::RuleExpression::parse_flags(std::string exp, size_t &index)
     }
 }
 
-void Xpp::RuleExpression::parse_expression(std::string exp, size_t &index)
+void Xpp::RuleExpression::parse_expression(std::string exp)
 {
     if (exp[index] == '[')
         throw std::runtime_error("Unexpected '[' token. Did you mean '\\['?");
     if (exp[index] == '<')
     {
-        parse_reference(exp, index);
+        parse_reference(exp);
         return;
     }
-    parse_constant_term(exp, index);
+    parse_constant_term(exp);
 }
 
-void Xpp::RuleExpression::parse_reference(std::string exp, size_t &index)
+void Xpp::RuleExpression::parse_reference(std::string exp)
 {
     char next = ParserTools::get_next(exp, index);
-    std::vector<std::string> reference_names;
+    std::vector<std::string> reference_names = {""};
     size_t current_name = 0;
     bool is_alternative = false;
-    Quantifier quantifier = {NONE, 0, 0};
+    std::vector<Quantifier> quantifiers = {Quantifier{NONE, 0, 0}};
 
     while (next != '>')
     {
@@ -92,6 +126,7 @@ void Xpp::RuleExpression::parse_reference(std::string exp, size_t &index)
         if (next == '|')
         {
             reference_names.push_back("");
+            quantifiers.push_back(Quantifier{NONE, 0, 0});
             current_name++;
             is_alternative = true;
             continue;
@@ -99,11 +134,12 @@ void Xpp::RuleExpression::parse_reference(std::string exp, size_t &index)
 
         if (next == '?' || next == '*' || next == '+' || next == '{')
         {
-            if (is_alternative)
-                throw std::runtime_error("Unexpected '" + std::string(1, next) + "' quantifier.");
-            quantifier = parse_quantifier(exp, index);
-            elements.push_back(ExpressionElement{RULE_REFERENCE, "", {ExpressionReference{reference_names[0], quantifier}}});
-            return;
+            quantifiers[current_name] = parse_quantifier(exp, is_alternative);
+            if (quantifiers[current_name].type != EXACT_VALUE)
+            {
+                elements.push_back(ExpressionElement{RULE_REFERENCE, "", {ExpressionReference{reference_names[current_name], quantifiers[current_name]}}});
+                return;
+            }
         }
 
         if (!isalnum(next))
@@ -119,21 +155,23 @@ void Xpp::RuleExpression::parse_reference(std::string exp, size_t &index)
         if (reference_names[current_name] == "")
             throw std::runtime_error("Unexpected the end of the reference after '|'");
 
-        for (auto name : reference_names)
+        for (size_t i = 0; i < reference_names.size(); i++)
         {
-            references.push_back(ExpressionReference{name, quantifier});
+            references.push_back(ExpressionReference{reference_names[i], quantifiers[i]});
         }
         elements.push_back(ExpressionElement{ALTERNATIVE, "", references});
         return;
     }
-    elements.push_back(ExpressionElement{RULE_REFERENCE, "", {ExpressionReference{reference_names[0], quantifier}}});
+    elements.push_back(ExpressionElement{RULE_REFERENCE, "", {ExpressionReference{reference_names[0], quantifiers[0]}}});
 }
 
-Xpp::Quantifier Xpp::RuleExpression::parse_quantifier(std::string exp, size_t &index)
+Xpp::Quantifier Xpp::RuleExpression::parse_quantifier(std::string exp, bool is_alternative)
 {
     char type = exp[index];
+    if (is_alternative && type != '{')
+        throw std::runtime_error("Cannot use ?, *, + and range quantifier with an alternative references");
     char ch;
-    if ((ch = ParserTools::get_next(exp, index)) != '>')
+    if ((ch = ParserTools::get_next(exp, index)) != '>' && type != '{')
         throw std::runtime_error("Unexpected '" + std::string(1, ch) + "' token, '>' was expected");
     if (type == '?')
         return Quantifier{ZERO_OR_ONE, 0, 0};
@@ -163,6 +201,8 @@ Xpp::Quantifier Xpp::RuleExpression::parse_quantifier(std::string exp, size_t &i
 
     if (current_value == 1)
     {
+        if (is_alternative)
+            throw std::runtime_error("Cannot use range quantifier with alternative references");
         if (values[0] == "")
             throw std::runtime_error("Expected value before ':' in '{:" + values[1] + "}'");
         if (values[current_value] == "")
@@ -175,7 +215,61 @@ Xpp::Quantifier Xpp::RuleExpression::parse_quantifier(std::string exp, size_t &i
 
 }
 
-void Xpp::RuleExpression::parse_constant_term(std::string exp, size_t &index)
+void Xpp::RuleExpression::parse_constant_term(std::string exp)
 {
-    
+    std::string value;
+    char ch;
+    bool escape;
+
+    while (true)
+    {
+        ch = ParserTools::get_next(exp, index);
+        if (escape)
+        {
+            escape = false;
+            switch (ch)
+            {
+            case 't':
+                value += '\t';
+                break;
+            case 'b':
+                throw std::runtime_error("Cannot match \\b character");
+            case 'n':
+                value += '\n';
+                break;
+            case 'r':
+                value += '\r';
+                break;
+            case 'v':
+                value += '\v';
+                break;
+            case '0':
+                value += '\0';
+                break;
+            default:
+                value += ch;
+                break;
+            }
+            continue;
+        }
+
+        if (ch == '\\')
+        {
+            escape = true;
+            continue;
+        }
+
+        if (ch == '<')
+            break;
+        if (ch == '>')
+            throw std::runtime_error("Unexpected '>' token");
+        value += ch;
+    }
+
+    elements.push_back(ExpressionElement{CONSTANT_TERMINAL, value, {}});
+}
+
+inline size_t Xpp::RuleExpression::get_last_index()
+{
+    return index;
 }

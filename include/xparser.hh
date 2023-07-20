@@ -4,9 +4,9 @@
  * @brief A simple parser for C++
  * @version 1.0
  * @date 2023-07-16
- * 
+ *
  * @copyright Copyright (c) 2023
- * 
+ *
  */
 
 #pragma once
@@ -67,66 +67,66 @@ namespace Xpp
     private:
         Jpp::Json grammar;
         std::vector<Rule> rules;
-        std::vector<TerminalRule> terminals;
+        std::vector<TerminalRule> terminals = {{"any", "."}, {"integer", "[-|+]?\\d+"}, {"identifier", "[_a-zA-Z][_a-zA-Z0-9]*"}, {"real", "[+|-]?\d+(\.\d+)?"}, {"alpha", "[a-zA-Z]"}, {"alnum", "[a-zA-Z0-9]"}, {"digit", "[0-9]"}, {"hexDigit", "[0-9a-fA-F]"}, {"octalDigit", "[0-7]"}, {"space", "[^\\S\\r\\n]"}, {"newLine", "\\r?\\n"}};
         std::stack<SyntaxError> error_stack;
 
         void generate_from_json();
         void generate_terminal_rules(std::map<std::string, Jpp::Json>);
         void generate_rules(std::map<std::string, Jpp::Json>);
         std::vector<RuleExpression> parse_expressions(std::map<std::string, Jpp::Json>);
-        std::string get_string_from_file(std::ifstream&);
+        std::string get_string_from_file(std::ifstream &);
         std::vector<Token> tokenize(std::string);
         Xpp::AST parse(std::vector<Token>);
 
     public:
         /**
          * @brief Construct a new Parser object
-         * 
+         *
          */
         Parser() = default;
 
         /**
          * @brief Construct a new Parser object specifying the grammar with a JSON object
-         * 
+         *
          */
         Parser(Jpp::Json);
-        
+
         /**
          * @brief Construct a new Parser object specifying the grammar with a JSON string
-         * 
+         *
          */
         Parser(std::string);
 
         /**
          * @brief Construct a new Parser object specifying the input file stream
-         * 
+         *
          */
-        Parser(std::ifstream&);
+        Parser(std::ifstream &);
 
         /**
          * @brief Destroy the Parser object
-         * 
+         *
          */
         ~Parser() = default;
 
         /**
          * @brief Get the ast object
-         * 
-         * @return AST 
+         *
+         * @return AST
          */
         AST generate_ast(std::string);
 
         /**
          * @brief Get the error stack
-         * 
-         * @return std::stack<SyntaxError>& 
+         *
+         * @return std::stack<SyntaxError>&
          */
         std::stack<SyntaxError> &get_error_stack();
 
         /**
          * @brief Get the last error
-         * 
-         * @return SyntaxError 
+         *
+         * @return SyntaxError
          */
         SyntaxError get_last_error();
     };
