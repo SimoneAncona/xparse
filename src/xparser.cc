@@ -33,7 +33,7 @@ inline Xpp::AST Xpp::Parser::generate_ast(std::string input_string)
     return parse(tokenize(input_string));
 }
 
-inline std::stack<Xpp::SyntaxError> &Xpp::Parser::get_error_stack()
+inline std::stack<Xpp::SyntaxError> &Xpp::Parser::get_error_stack() noexcept
 {
     return error_stack;
 }

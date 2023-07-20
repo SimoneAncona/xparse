@@ -10,27 +10,27 @@
 
 #include "rel.hh"
 
-inline bool Xpp::RuleExpression::is_boundary_set()
+inline bool Xpp::RuleExpression::is_boundary_set() noexcept
 {
     return this->boundary_flag;
 }
 
-inline bool Xpp::RuleExpression::is_ignore_spaces_set()
+inline bool Xpp::RuleExpression::is_ignore_spaces_set() noexcept
 {
     return this->ignore_spaces;
 }
 
-inline bool Xpp::RuleExpression::is_soft_case_insensitive_set()
+inline bool Xpp::RuleExpression::is_soft_case_insensitive_set() noexcept
 {
     return this->case_insensitive_flag == CASE_INSENSITIVE_SOFT;
 }
 
-inline bool Xpp::RuleExpression::is_strict_case_insensitive_set()
+inline bool Xpp::RuleExpression::is_strict_case_insensitive_set() noexcept
 {
     return this->case_insensitive_flag == CASE_INSENSITIVE_STRICT;
 }
 
-inline std::vector<Xpp::ExpressionElement> &Xpp::RuleExpression::get_elements()
+inline std::vector<Xpp::ExpressionElement> &Xpp::RuleExpression::get_elements() noexcept
 {
     return this->elements;
 }
@@ -43,6 +43,11 @@ inline std::vector<Xpp::ExpressionElement>::iterator Xpp::RuleExpression::begin(
 inline std::vector<Xpp::ExpressionElement>::iterator Xpp::RuleExpression::end()
 {
     return this->elements.end();
+}
+
+inline Xpp::ExpressionElement &Xpp::RuleExpression::operator[](size_t index) noexcept
+{
+    return this->elements[index];
 }
 
 Xpp::RuleExpression::RuleExpression(std::string rule_expression)
@@ -104,6 +109,7 @@ void Xpp::RuleExpression::parse_expression(std::string exp)
         throw std::runtime_error("Unexpected '[' token. Did you mean '\\['?");
     if (exp[index] == '<')
     {
+        index++;
         parse_reference(exp);
         return;
     }
@@ -118,7 +124,7 @@ void Xpp::RuleExpression::parse_reference(std::string exp)
     bool is_alternative = false;
     std::vector<Quantifier> quantifiers = {Quantifier{NONE, 0, 0}};
 
-    while (next != '>')
+    while (true)
     {
         if (next == '\0')
             throw std::runtime_error("Unexpected the end of the expression. Did you forget '>'?");
@@ -134,13 +140,16 @@ void Xpp::RuleExpression::parse_reference(std::string exp)
 
         if (next == '?' || next == '*' || next == '+' || next == '{')
         {
-            quantifiers[current_name] = parse_quantifier(exp, is_alternative);
+            quantifiers[current_name] = parse_quantifier(exp, is_alternative, next);
             if (quantifiers[current_name].type != EXACT_VALUE)
             {
                 elements.push_back(ExpressionElement{RULE_REFERENCE, "", {ExpressionReference{reference_names[current_name], quantifiers[current_name]}}});
                 return;
             }
         }
+
+        if (next == '>')
+            break;
 
         if (!isalnum(next))
             throw std::runtime_error("Unexpected '" + std::string(1, next) + "' token");
@@ -165,9 +174,8 @@ void Xpp::RuleExpression::parse_reference(std::string exp)
     elements.push_back(ExpressionElement{RULE_REFERENCE, "", {ExpressionReference{reference_names[0], quantifiers[0]}}});
 }
 
-Xpp::Quantifier Xpp::RuleExpression::parse_quantifier(std::string exp, bool is_alternative)
+Xpp::Quantifier Xpp::RuleExpression::parse_quantifier(std::string exp, bool is_alternative, char type)
 {
-    char type = exp[index];
     if (is_alternative && type != '{')
         throw std::runtime_error("Cannot use ?, *, + and range quantifier with an alternative references");
     char ch;
@@ -219,11 +227,13 @@ void Xpp::RuleExpression::parse_constant_term(std::string exp)
 {
     std::string value;
     char ch;
-    bool escape;
+    bool escape = false;
 
     while (true)
     {
         ch = ParserTools::get_next(exp, index);
+        if (ch == '\0')
+            break;
         if (escape)
         {
             escape = false;
@@ -260,7 +270,10 @@ void Xpp::RuleExpression::parse_constant_term(std::string exp)
         }
 
         if (ch == '<')
+        {
+            --index;
             break;
+        }
         if (ch == '>')
             throw std::runtime_error("Unexpected '>' token");
         value += ch;
@@ -269,7 +282,7 @@ void Xpp::RuleExpression::parse_constant_term(std::string exp)
     elements.push_back(ExpressionElement{CONSTANT_TERMINAL, value, {}});
 }
 
-inline size_t Xpp::RuleExpression::get_last_index()
+inline size_t Xpp::RuleExpression::get_last_index() noexcept
 {
     return index;
 }

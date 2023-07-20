@@ -67,7 +67,7 @@ namespace Xpp
     private:
         Jpp::Json grammar;
         std::vector<Rule> rules;
-        std::vector<TerminalRule> terminals = {{"any", "."}, {"integer", "[-|+]?\\d+"}, {"identifier", "[_a-zA-Z][_a-zA-Z0-9]*"}, {"real", "[+|-]?\d+(\.\d+)?"}, {"alpha", "[a-zA-Z]"}, {"alnum", "[a-zA-Z0-9]"}, {"digit", "[0-9]"}, {"hexDigit", "[0-9a-fA-F]"}, {"octalDigit", "[0-7]"}, {"space", "[^\\S\\r\\n]"}, {"newLine", "\\r?\\n"}};
+        std::vector<TerminalRule> terminals = {{"any", "."}, {"integer", "[-|+]?\\d+"}, {"identifier", "[_a-zA-Z][_a-zA-Z0-9]*"}, {"real", "[+|-]?\\d+(\\.\\d+)?"}, {"alpha", "[a-zA-Z]"}, {"alnum", "[a-zA-Z0-9]"}, {"digit", "[0-9]"}, {"hexDigit", "[0-9a-fA-F]"}, {"octalDigit", "[0-7]"}, {"space", "[^\\S\\r\\n]"}, {"newLine", "\\r?\\n"}};
         std::stack<SyntaxError> error_stack;
 
         void generate_from_json();
@@ -121,7 +121,7 @@ namespace Xpp
          *
          * @return std::stack<SyntaxError>&
          */
-        std::stack<SyntaxError> &get_error_stack();
+        std::stack<SyntaxError> &get_error_stack() noexcept;
 
         /**
          * @brief Get the last error

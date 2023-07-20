@@ -10,7 +10,7 @@
 
 #include "ptools.hh"
 
-char ParserTools::get_next(std::string str, size_t &index)
+char ParserTools::get_next(std::string str, size_t &index) noexcept
 {
     if (index >= str.length()) return 0;
     return str[index++];

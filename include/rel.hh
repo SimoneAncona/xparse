@@ -65,30 +65,30 @@ namespace Xpp
         int case_insensitive_flag = CASE_INSENSITIVE_CLEAR;
         bool boundary_flag = false;
         bool ignore_spaces = false;
-        size_t index;
+        size_t index = 0;
 
         void parse_flags(std::string);
         void parse_expression(std::string);
         void parse_constant_term(std::string);
         void parse_reference(std::string);
-        Quantifier parse_quantifier(std::string, bool);
+        Quantifier parse_quantifier(std::string, bool, char);
 
     public:
         RuleExpression() = default;
         ~RuleExpression() = default;
         RuleExpression(std::string);
 
-        bool is_boundary_set();
-        bool is_ignore_spaces_set();
-        bool is_strict_case_insensitive_set();
-        bool is_soft_case_insensitive_set();
+        bool is_boundary_set() noexcept;
+        bool is_ignore_spaces_set() noexcept;
+        bool is_strict_case_insensitive_set() noexcept;
+        bool is_soft_case_insensitive_set() noexcept;
 
-        std::vector<ExpressionElement> &get_elements();
-        ExpressionElement &operator[](size_t index);
+        std::vector<ExpressionElement> &get_elements() noexcept;
+        ExpressionElement &operator[](size_t index) noexcept;
 
         std::vector<ExpressionElement>::iterator begin();
         std::vector<ExpressionElement>::iterator end();
 
-        size_t get_last_index();
+        size_t get_last_index() noexcept;
     };
 };
