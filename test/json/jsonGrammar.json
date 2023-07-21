@@ -22,19 +22,27 @@
         },
         {
             "name": "object",
-            "expressions": ["[sb]{<keyValue*>}"]
+            "expressions": ["[sb]{<keyValueSeparator*><keyValue?>}"]
         },
         {
             "name": "array",
-            "expressions": ["[sb]{<value*>}"]
+            "expressions": ["[sb]\\[<valueSeparator*><value?>\\]"]
         },
         {
             "name": "value",
             "expressions": ["<object|array|string|real|boolean|null>"]
         },
         {
+            "name": "valueSeparator",
+            "expressions": ["<value>,"]
+        },
+        {
             "name": "keyValue",
             "expressions": ["[sb]<string> : <value>"]
+        },
+        {
+            "name": "keyValueSeparator",
+            "expressions": ["<keyValue>,"]
         }
     ]
 }
