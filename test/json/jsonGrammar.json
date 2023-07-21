@@ -22,11 +22,11 @@
         },
         {
             "name": "object",
-            "expressions": ["[sb]{<keyValueSeparator*><keyValue?>}"]
+            "expressions": ["[sb]{<keyValueSeparator*><keyValue>}", "{<space*>}"]
         },
         {
             "name": "array",
-            "expressions": ["[sb]\\[<valueSeparator*><value?>\\]"]
+            "expressions": ["[sb]\\[<valueSeparator*><value>\\]", "\\[<space*>\\]"]
         },
         {
             "name": "value",
