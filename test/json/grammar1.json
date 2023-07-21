@@ -3,15 +3,15 @@
     "name": "MyGrammar",
     "terminals": [
         {
-            "name": "asdfasd",
-            "regex": "\".*\""
+            "name": "lolly",
+            "regex": "\"[a-zA-Z]+\""
         }
     ],
     "rules": [
         {
             "name": "stringDefinition",
             "expressions": [
-                "[sb]def <string><space?>;"
+                "[sb]def <lolly><space?>;"
             ]
         }
     ]

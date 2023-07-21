@@ -62,13 +62,17 @@ namespace Xpp
         size_t line;
     };
 
+    bool token_compare(Token, Token);
+
     class Parser
     {
     private:
         Jpp::Json grammar;
         std::vector<Rule> rules;
-        std::vector<TerminalRule> terminals = {{"any", "."}, {"integer", "[-|+]?\\d+"}, {"identifier", "[_a-zA-Z][_a-zA-Z0-9]*"}, {"real", "[+|-]?\\d+(\\.\\d+)?"}, {"alpha", "[a-zA-Z]"}, {"alnum", "[a-zA-Z0-9]"}, {"digit", "[0-9]"}, {"hexDigit", "[0-9a-fA-F]"}, {"octalDigit", "[0-7]"}, {"space", "[^\\S\\r\\n]"}, {"newLine", "\\r?\\n"}};
+        std::vector<TerminalRule> terminals = {{"any", "."}, {"integer", "[-|+]?\\d+"}, {"identifier", "[_a-zA-Z][_a-zA-Z0-9]*"}, {"real", "[+|-]?\\d+(\\.\\d+)?"}, {"alpha", "[a-zA-Z]"}, {"alnum", "[a-zA-Z0-9]"}, {"digit", "[0-9]"}, {"hexDigit", "[0-9a-fA-F]"}, {"octalDigit", "[0-7]"}, {"space", "[^\\S]"}, {"newLine", "\\r?\\n"}};
         std::stack<SyntaxError> error_stack;
+
+        size_t index;
 
         void generate_from_json();
         void generate_terminal_rules(std::map<std::string, Jpp::Json>);
@@ -77,6 +81,8 @@ namespace Xpp
         std::string get_string_from_file(std::ifstream &);
         std::vector<Token> tokenize(std::string);
         Xpp::AST parse(std::vector<Token>);
+        std::vector<Token> get_tokens(std::string, TerminalRule);
+        std::pair<size_t, size_t> get_column_line(std::string, long long);
 
     public:
         /**

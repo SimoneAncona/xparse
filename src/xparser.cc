@@ -119,8 +119,64 @@ std::vector<Xpp::RuleExpression> Xpp::Parser::parse_expressions(std::map<std::st
 std::vector<Xpp::Token> Xpp::Parser::tokenize(std::string str)
 {
     std::vector<Xpp::Token> tokens;
+    std::vector<Xpp::Token> temp;
+
+    for (auto t : terminals)
+    {
+        temp = get_tokens(str, t);
+        for (auto tm : temp)
+        {
+            tokens.push_back(tm);
+        }
+    }
+
+    std::sort(tokens.begin(), tokens.end(), Xpp::token_compare);
 
     return tokens;
+}
+
+bool Xpp::token_compare(Xpp::Token t1, Xpp::Token t2)
+{
+    return t1.index < t2.index;
+}
+
+std::vector<Xpp::Token> Xpp::Parser::get_tokens(std::string str, Xpp::TerminalRule rule)
+{
+    std::vector<Xpp::Token> tokens;
+    std::smatch m;
+    std::pair<size_t, size_t> column_line;
+    std::string::const_iterator s_begin = str.cbegin();
+    size_t index = 0;
+
+    while (std::regex_search(s_begin, str.cend(), m, std::regex(rule.regex)))
+    {   
+        index = (str.length() - m.suffix().length()) - m.str().length();
+        column_line = Xpp::Parser::get_column_line(str, index);
+        tokens.push_back(Xpp::Token{rule, index, column_line.first, column_line.second, m.str()});
+        s_begin = m.suffix().first;
+    }
+
+    return tokens;
+}
+
+std::pair<size_t, size_t> Xpp::Parser::get_column_line(std::string str, long long index)
+{
+    size_t column = 0;
+    size_t line = 0;
+    long long i = 0;
+    for (auto ch : str)
+    {
+        if (i == index) 
+            return std::pair<size_t, size_t>(column, line);
+        if (ch == '\n')
+        {
+            line++;
+            column = 0;
+        }
+        i++;
+        column++;
+    }
+    return std::pair<size_t, size_t>(0, 0);
 }
 
 Xpp::AST Xpp::Parser::parse(std::vector<Xpp::Token> tokens)
