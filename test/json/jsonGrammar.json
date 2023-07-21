@@ -1,0 +1,40 @@
+{
+    "$schema": "https://raw.githubusercontent.com/SimoneAncona/xparser/main/schemas/schema.json",
+    "name": "JSON",
+    "terminals": [
+        {
+            "name": "string",
+            "regex": "\".*\""
+        },
+        {
+            "name": "boolean",
+            "regex": "true|false"
+        },
+        {
+            "name": "null",
+            "regex": "null"
+        }
+    ],
+    "rules": [
+        {
+            "name": "jsonFile",
+            "expressions": ["<object|array>"]
+        },
+        {
+            "name": "object",
+            "expressions": ["[sb]{<keyValue*>}"]
+        },
+        {
+            "name": "array",
+            "expressions": ["[sb]{<value*>}"]
+        },
+        {
+            "name": "value",
+            "expressions": ["<object|array|string|real|boolean|null>"]
+        },
+        {
+            "name": "keyValue",
+            "expressions": ["[sb]<string> : <value>"]
+        }
+    ]
+}
