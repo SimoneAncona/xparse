@@ -29,41 +29,41 @@ Xpp::AST::AST(std::string rule_name, std::string terminal_value)
     this->value = terminal_value;
 }
 
-inline bool Xpp::AST::is_terminal()
+bool Xpp::AST::is_terminal()
 {
     return terminal;
 }
 
-inline std::string Xpp::AST::get_rule_name()
+std::string Xpp::AST::get_rule_name()
 {
     return rule_name;
 }
 
-inline std::string Xpp::AST::get_value()
+std::string Xpp::AST::get_value()
 {
     if (!terminal)
         throw std::runtime_error("Cannot get the value of a non-terminal node");
     return value;
 }
 
-inline std::vector<Xpp::AST> &Xpp::AST::get_children()
+std::vector<Xpp::AST> &Xpp::AST::get_children()
 {
     if (terminal)
         throw std::runtime_error("Cannot get the children of an terminal node");
     return children;
 }
 
-inline Xpp::AST &Xpp::AST::operator[](size_t index)
+Xpp::AST &Xpp::AST::operator[](size_t index)
 {
     return children[index];
 }
 
-inline std::vector<Xpp::AST>::iterator Xpp::AST::begin()
+std::vector<Xpp::AST>::iterator Xpp::AST::begin()
 {
     return children.begin();
 }
 
-inline std::vector<Xpp::AST>::iterator Xpp::AST::end()
+std::vector<Xpp::AST>::iterator Xpp::AST::end()
 {
     return children.end();
 }

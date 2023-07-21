@@ -10,42 +10,42 @@
 
 #include "rel.hh"
 
-inline bool Xpp::RuleExpression::is_boundary_set() noexcept
+bool Xpp::RuleExpression::is_boundary_set() noexcept
 {
     return this->boundary_flag;
 }
 
-inline bool Xpp::RuleExpression::is_ignore_spaces_set() noexcept
+bool Xpp::RuleExpression::is_ignore_spaces_set() noexcept
 {
     return this->ignore_spaces;
 }
 
-inline bool Xpp::RuleExpression::is_soft_case_insensitive_set() noexcept
+bool Xpp::RuleExpression::is_soft_case_insensitive_set() noexcept
 {
     return this->case_insensitive_flag == CASE_INSENSITIVE_SOFT;
 }
 
-inline bool Xpp::RuleExpression::is_strict_case_insensitive_set() noexcept
+bool Xpp::RuleExpression::is_strict_case_insensitive_set() noexcept
 {
     return this->case_insensitive_flag == CASE_INSENSITIVE_STRICT;
 }
 
-inline std::vector<Xpp::ExpressionElement> &Xpp::RuleExpression::get_elements() noexcept
+std::vector<Xpp::ExpressionElement> &Xpp::RuleExpression::get_elements() noexcept
 {
     return this->elements;
 }
 
-inline std::vector<Xpp::ExpressionElement>::iterator Xpp::RuleExpression::begin()
+std::vector<Xpp::ExpressionElement>::iterator Xpp::RuleExpression::begin()
 {
     return this->elements.begin();
 }
 
-inline std::vector<Xpp::ExpressionElement>::iterator Xpp::RuleExpression::end()
+std::vector<Xpp::ExpressionElement>::iterator Xpp::RuleExpression::end()
 {
     return this->elements.end();
 }
 
-inline Xpp::ExpressionElement &Xpp::RuleExpression::operator[](size_t index) noexcept
+Xpp::ExpressionElement &Xpp::RuleExpression::operator[](size_t index) noexcept
 {
     return this->elements[index];
 }
@@ -282,7 +282,7 @@ void Xpp::RuleExpression::parse_constant_term(std::string exp)
     elements.push_back(ExpressionElement{CONSTANT_TERMINAL, value, {}});
 }
 
-inline size_t Xpp::RuleExpression::get_last_index() noexcept
+size_t Xpp::RuleExpression::get_last_index() noexcept
 {
     return index;
 }

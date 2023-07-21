@@ -2,8 +2,8 @@
  * @file json.hh
  * @author Simone Ancona
  * @brief A JSON parser for C++
- * @version 1.1.3
- * @date 2023-07-15
+ * @version 1.2.2
+ * @date 2023-07-20
  * 
  * @copyright Copyright (c) 2023
  * 
@@ -61,7 +61,7 @@ namespace Jpp
         Json(double);
         Json(bool);
         Json(nullptr_t);
-        ~Json();
+        ~Json() = default;
 
         /**
          * @brief Get the type object
@@ -201,7 +201,10 @@ namespace Jpp
          * @return std::map<std::string, Json>::iterator
          * @since v1.1
          */
-        std::map<std::string, Json>::iterator begin();
+        inline std::map<std::string, Json>::iterator begin()
+        {
+            return children.begin();
+        }
 
         /**
          * @brief End iterator
@@ -209,7 +212,10 @@ namespace Jpp
          * @return std::map<std::string, Json>::iterator
          * @since v1.1
          */
-        std::map<std::string, Json>::iterator end();
+        inline std::map<std::string, Json>::iterator end()
+        {
+            return children.end();
+        }
 
         /**
          * @brief Reverse begin iterator
@@ -217,7 +223,10 @@ namespace Jpp
          * @return std::map<std::string, Json>::iterator
          * @since v1.1
          */
-        std::map<std::string, Json>::reverse_iterator rbegin();
+        inline std::map<std::string, Json>::reverse_iterator rbegin()
+        {
+            return children.rbegin();
+        }
 
         /**
          * @brief Reverse end iterator
@@ -225,7 +234,18 @@ namespace Jpp
          * @return std::map<std::string, Json>::iterator
          * @since v1.1
          */
-        std::map<std::string, Json>::reverse_iterator rend();
+        inline std::map<std::string, Json>::reverse_iterator rend()
+        {
+            return children.rend();
+        }
+
+        /**
+         * @brief Get the vector if the JSON object is an array
+         * 
+         * @return std::vector<Json> 
+         * @since v1.2
+         */
+        std::vector<Json> get_vector();
     };
 
     void trim_string(std::string &);

@@ -28,29 +28,29 @@ Xpp::Parser::Parser(std::ifstream &file)
     this->generate_from_json();
 }
 
-inline Xpp::AST Xpp::Parser::generate_ast(std::string input_string)
+Xpp::AST Xpp::Parser::generate_ast(std::string input_string)
 {
     return parse(tokenize(input_string));
 }
 
-inline std::stack<Xpp::SyntaxError> &Xpp::Parser::get_error_stack() noexcept
+std::stack<Xpp::SyntaxError> &Xpp::Parser::get_error_stack() noexcept
 {
     return error_stack;
 }
 
-inline Xpp::SyntaxError Xpp::Parser::get_last_error()
+Xpp::SyntaxError Xpp::Parser::get_last_error()
 {
     return error_stack.top();
 }
 
-inline std::string Xpp::Parser::get_string_from_file(std::ifstream &file)
+std::string Xpp::Parser::get_string_from_file(std::ifstream &file)
 {
     std::stringstream buff;
     buff << file.rdbuf();
     return buff.str();
 }
 
-inline void Xpp::Parser::generate_from_json()
+void Xpp::Parser::generate_from_json()
 {
     auto children = grammar.get_children();
     auto terminals = children.find("terminals");
@@ -72,7 +72,7 @@ inline void Xpp::Parser::generate_from_json()
     generate_rules(rulesArray);
 }
 
-inline void Xpp::Parser::generate_terminal_rules(std::map<std::string, Jpp::Json> terminalsArray)
+void Xpp::Parser::generate_terminal_rules(std::map<std::string, Jpp::Json> terminalsArray)
 {
     for (auto terminal : terminalsArray)
     {
@@ -87,7 +87,7 @@ inline void Xpp::Parser::generate_terminal_rules(std::map<std::string, Jpp::Json
     }
 }
 
-inline void Xpp::Parser::generate_rules(std::map<std::string, Jpp::Json> rulesArray)
+void Xpp::Parser::generate_rules(std::map<std::string, Jpp::Json> rulesArray)
 {
     Xpp::Rule rule;
     for (auto ruleJSON : rulesArray)
