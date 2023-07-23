@@ -69,7 +69,7 @@ namespace Xpp
     private:
         Jpp::Json grammar;
         std::vector<Rule> rules;
-        std::vector<TerminalRule> terminals = {{"any", "."}, {"integer", "[-|+]?\\d+"}, {"identifier", "[_a-zA-Z][_a-zA-Z0-9]*"}, {"real", "[+|-]?\\d+(\\.\\d+)?"}, {"alpha", "[a-zA-Z]"}, {"alnum", "[a-zA-Z0-9]"}, {"digit", "[0-9]"}, {"hexDigit", "[0-9a-fA-F]"}, {"octalDigit", "[0-7]"}, {"space", "[^\\S]"}, {"newLine", "\\r?\\n"}};
+        std::vector<TerminalRule> terminals = {{"integer", "[-|+]?\\d+"}, {"identifier", "[_a-zA-Z][_a-zA-Z0-9]*"}, {"real", "[+|-]?\\d+(\\.\\d+)?"}};
         std::stack<SyntaxError> error_stack;
 
         size_t index;
@@ -78,11 +78,19 @@ namespace Xpp
         void generate_terminal_rules(std::map<std::string, Jpp::Json>);
         void generate_rules(std::map<std::string, Jpp::Json>);
         std::vector<RuleExpression> parse_expressions(std::map<std::string, Jpp::Json>);
-        std::string get_string_from_file(std::ifstream &);
-        std::vector<Token> tokenize(std::string);
-        Xpp::AST parse(std::vector<Token>);
-        std::vector<Token> get_tokens(std::string, TerminalRule);
-        std::pair<size_t, size_t> get_column_line(std::string, long long);
+        std::string get_string_from_file(const std::ifstream &);
+        std::vector<Token> tokenize(const std::string &);
+        Xpp::AST parse(const std::vector<Token> &);
+        std::vector<Token> get_tokens(const std::string &, TerminalRule);
+        std::pair<size_t, size_t> get_column_line(std::string_view, long long);
+        Xpp::AST analyze_rule(const std::vector<Token> &, const Rule &);
+        Xpp::AST analyze_expression(const std::vector<Token> &, RuleExpression &);
+        Xpp::AST analyze_alternative(const std::vector<Token> &, const ExpressionElement &);
+        Xpp::AST analyze_reference(const std::vector<Token> &, const ExpressionElement &);
+        Xpp::AST analyze_zero_or_one(const std::vector<Token> &, const ExpressionElement &);
+        Xpp::AST analyze_zero_or_more(const std::vector<Token> &, const ExpressionElement &);
+        Xpp::AST analyze_one_or_more(const std::vector<Token> &, const ExpressionElement &);
+        Xpp::AST analyze_constant(const std::vector<Token> &, const ExpressionElement &);
 
     public:
         /**
@@ -95,19 +103,19 @@ namespace Xpp
          * @brief Construct a new Parser object specifying the grammar with a JSON object
          *
          */
-        Parser(Jpp::Json);
+        Parser(const Jpp::Json &);
 
         /**
          * @brief Construct a new Parser object specifying the grammar with a JSON string
          *
          */
-        Parser(std::string);
+        Parser(const std::string &);
 
         /**
          * @brief Construct a new Parser object specifying the input file stream
          *
          */
-        Parser(std::ifstream &);
+        Parser(const std::ifstream &);
 
         /**
          * @brief Destroy the Parser object
@@ -120,7 +128,7 @@ namespace Xpp
          *
          * @return AST
          */
-        AST generate_ast(std::string);
+        AST generate_ast(const std::string &);
 
         /**
          * @brief Get the error stack

@@ -1,9 +1,9 @@
 /**
- * @file json.cc
+ * @file jpp.cc
  * @author Simone Ancona
  * @brief
- * @version 1.2.2
- * @date 2023-07-20
+ * @version 1.4
+ * @date 2023-07-23
  *
  * @copyright Copyright (c) 2023
  *
@@ -11,106 +11,31 @@
 
 #include "jpp.hh"
 
-bool Jpp::Json::is_array()
-{
-    return this->type == JSON_ARRAY;
-}
-
-bool Jpp::Json::is_object()
-{
-    return this->type == JSON_OBJECT;
-}
-
-bool Jpp::Json::is_string()
-{
-    return this->type == JSON_STRING;
-}
-
-bool Jpp::Json::is_boolean()
-{
-    return this->type == JSON_BOOLEAN;
-}
-
-bool Jpp::Json::is_number()
-{
-    return this->type == JSON_NUMBER;
-}
-
-Jpp::json_type_t Jpp::Json::get_type()
-{
-    return this->type;
-}
-
-Jpp::Json::Json()
-{
-    this->type = JSON_OBJECT;
-}
-
-Jpp::Json::Json(std::map<std::string, Jpp::Json> children, Jpp::json_type_t type)
-{
-    this->children = children;
-    this->type = type;
-}
-
-Jpp::Json::Json(std::any value, Jpp::json_type_t type)
-{
-    this->value = value;
-    this->type = type;
-}
-
-Jpp::Json::Json(std::string str)
-{
-    this->value = str;
-    this->type = JSON_STRING;
-}
-
-Jpp::Json::Json(double num)
-{
-    this->value = num;
-    this->type = JSON_NUMBER;
-}
-
-Jpp::Json::Json(bool val)
-{
-    this->value = val;
-    this->type = JSON_BOOLEAN;
-}
-
-Jpp::Json::Json(nullptr_t null)
-{
-    this->value = null;
-    this->type = JSON_NULL;
-}
-
-std::any Jpp::Json::get_value()
-{
-    return this->value;
-}
-
-std::map<std::string, Jpp::Json> Jpp::Json::get_children()
-{
-    return this->children;
-}
-
 Jpp::Json &Jpp::Json::operator[](size_t index)
 {
-    if (this->type > JSON_OBJECT)
+    if (this->type > Jpp::JSON_OBJECT)
         throw std::out_of_range("Cannot use the subscript operator with an atomic value, use get_value");
-    return this->children.at(std::to_string(index));
+    if (!is_resolved)
+        parse(unresolved_string);
+    return this->children[std::to_string(index)];
 }
 
-Jpp::Json &Jpp::Json::operator[](std::string property)
+Jpp::Json &Jpp::Json::operator[](const std::string &property)
 {
-    if (this->type > JSON_OBJECT)
+    if (this->type > Jpp::JSON_OBJECT)
         throw std::out_of_range("Cannot use the subscript operator with an atomic value, use get_value");
-    if (this->type == JSON_OBJECT && this->children.find(property) == this->children.end())
-        this->children[property] = Json(nullptr);
+    if (this->type == Jpp::JSON_OBJECT && this->children.find(property) == this->children.end())
+        this->children.emplace(property, Json(nullptr));
+    if (!is_resolved)
+        parse(unresolved_string);
     return this->children.at(property);
 }
 
-Jpp::Json &Jpp::Json::operator=(std::string str)
+Jpp::Json &Jpp::Json::operator=(const std::string &str)
 {
-    this->type = JSON_STRING;
+    this->children.clear();
+    this->is_resolved = true;
+    this->type = Jpp::JSON_STRING;
     this->value = str;
 
     return *this;
@@ -118,7 +43,9 @@ Jpp::Json &Jpp::Json::operator=(std::string str)
 
 Jpp::Json &Jpp::Json::operator=(const char str[])
 {
-    this->type = JSON_STRING;
+    this->children.clear();
+    this->is_resolved = true;
+    this->type = Jpp::JSON_STRING;
     this->value = std::string(str);
 
     return *this;
@@ -126,65 +53,169 @@ Jpp::Json &Jpp::Json::operator=(const char str[])
 
 Jpp::Json &Jpp::Json::operator=(bool val)
 {
-    this->type = JSON_BOOLEAN;
+    this->children.clear();
+    this->is_resolved = true;
+    this->type = Jpp::JSON_BOOLEAN;
     this->value = val;
-    
+
     return *this;
 }
 
 Jpp::Json &Jpp::Json::operator=(double num)
 {
-    this->type = JSON_NUMBER;
+    this->children.clear();
+    this->is_resolved = true;
+    this->type = Jpp::JSON_NUMBER;
     this->value = num;
-    
+
     return *this;
 }
 
 Jpp::Json &Jpp::Json::operator=(int num)
 {
-    this->type = JSON_NUMBER;
+    this->children.clear();
+    this->is_resolved = true;
+    this->type = Jpp::JSON_NUMBER;
     this->value = static_cast<double>(num);
-    
+
     return *this;
 }
 
-void Jpp::Json::parse(std::string json_string)
+Jpp::Json &Jpp::Json::operator=(std::vector<std::any> array)
 {
-    trim_string(json_string);
+    this->children.clear();
+    this->type = Jpp::JSON_ARRAY;
+    this->is_resolved = true;
+    for (size_t i = 0; i < array.size(); ++i)
+    {
+        this->children.emplace(std::to_string(i), Json(array[i]));
+    }
+    return *this;
+}
+
+Jpp::Json &Jpp::Json::operator=(std::vector<std::pair<std::string, std::any>> object)
+{
+    this->children.clear();
+    this->type = Jpp::JSON_OBJECT;
+    this->is_resolved = true;
+    for (size_t i = 0; i < object.size(); ++i)
+    {
+        this->children.emplace(object[i].first, Json(object[i].second));
+    }
+    return *this;
+}
+
+void Jpp::Json::parse(const std::string &json_string)
+{
     size_t start = 0;
+    this->is_resolved = true;
     if (json_string[start] == '{')
     {
-        this->children = Jpp::parse_object(json_string, start);
-        this->type = JSON_OBJECT;
+        this->children = parse_object(json_string, start);
+        this->unresolved_string = "";
+        this->type = Jpp::JSON_OBJECT;
         return;
     }
     if (json_string[start] == '[')
     {
-        this->children = Jpp::parse_array(json_string, start);
-        this->type = JSON_ARRAY;
+        this->children = parse_array(json_string, start);
+        this->unresolved_string = "";
+        this->type = Jpp::JSON_ARRAY;
         return;
     }
     throw std::runtime_error("Unexpected " + std::string(1, json_string[0]) + " at the beginning of the string");
 }
 
-void Jpp::trim_string(std::string &str)
+Jpp::Json Jpp::Json::get_unresolved_object(std::string_view str, size_t &index, bool is_object)
 {
-    size_t start = 0;
-    size_t end = str.length() - 1;
-    while (str[start] == ' ' || str[start] == '\n')
+    const char end = is_object ? '}' : ']';
+    const char start = is_object ? '{' : '[';
+    char is_string = false;
+    bool escape = false;
+    std::string unresolved;
+    Jpp::Json unresolved_json;
+    int level = 0;
+    bool cycle = true;
+
+    while (cycle)
     {
-        ++start;
-        if (start == end)
-            throw std::runtime_error("The string is empty");
+        if (!(is_space(str[index]) && !is_string))
+            unresolved += str[index];
+        index++;
+        if (index >= str.length())
+            throw std::runtime_error("Unexpected end of the string");
+
+        switch (str[index])
+        {
+        case '"':
+            if (escape || is_string == '\'')
+            {
+                escape = false;
+                break;
+            }
+            if (is_string == '"')
+            {
+                escape = false;
+                is_string = false;
+                break;
+            }
+            escape = false;
+            is_string = '"';
+            break;
+        case '\'':
+            if (escape || is_string == '"')
+            {
+                escape = false;
+                break;
+            }
+            if (is_string == '\'')
+            {
+                escape = false;
+                is_string = false;
+                break;
+            }
+            escape = false;
+            is_string = '\'';
+            break;
+        case '\\':
+            if (!is_string)
+                throw std::runtime_error("Unexpected '\\' token at position: " + std::to_string(index));
+            escape = !escape;
+            break;
+        case '{':
+        case '[':
+            if (str[index] != start)
+                break;
+            if (!is_string)
+                level++;
+            break;
+        case '}':
+        case ']':
+            if (str[index] != end)
+                break;
+            if (!is_string)
+            {
+                if (level == 0)
+                    cycle = false;
+                else
+                    level--;
+                break;
+            }
+            break;
+        default:
+            escape = false;
+            break;
+        }
     }
-
-    while (str[end] == ' ' || str[end] == '\n')
-        --end;
-
-    str = str.substr(start, end - start + 1);
+    index++;
+    unresolved += end;
+    unresolved_json.type = is_object ? JSON_OBJECT : JSON_ARRAY;
+    unresolved_json.is_resolved = false;
+    unresolved_json.unresolved_string = unresolved;
+    return unresolved_json;
 }
 
-std::map<std::string, Jpp::Json> Jpp::parse_object(std::string str, size_t &index)
+std::map<std::string, Jpp::Json> Jpp::Json::parse_object(std::string_view str, size_t &index)
 {
     std::map<std::string, Jpp::Json> object;
     Jpp::Token next;
@@ -192,85 +223,85 @@ std::map<std::string, Jpp::Json> Jpp::parse_object(std::string str, size_t &inde
     Jpp::Json current_value;
 
     ++index;
-    Jpp::skip_white_spaces(str, index);
+    skip_white_spaces(str, index);
 
     while (true)
     {
-        next = Jpp::match_next(str, index);
+        next = match_next(str, index);
 
         switch (next)
         {
         case Jpp::Token::END:
-            throw std::invalid_argument("Unexpected the end of the string, expected a '}'");
+            throw std::invalid_argument("Unexpected the end of the string, expected a '}' at position: " + std::to_string(index));
         case Jpp::Token::ARRAY_START:
-            throw std::runtime_error("Unexpected the start of an array, expected a property name");
+            throw std::runtime_error("Unexpected the start of an array, expected a property name at position: " + std::to_string(index));
         case Jpp::Token::ARRAY_END:
-            throw std::runtime_error("Unexpected the end of an array, expected a property name");
+            throw std::runtime_error("Unexpected the end of an array, expected a property name at position: " + std::to_string(index));
         case Jpp::Token::ALPHA:
-            throw std::runtime_error("Unexpected a boolean value, expected a property name");
+            throw std::runtime_error("Unexpected a boolean value, expected a property name at position: " + std::to_string(index));
         case Jpp::Token::NUMBER:
-            throw std::runtime_error("Unexpected a number value, expected a property name");
+            throw std::runtime_error("Unexpected a number value, expected a property name at position: " + std::to_string(index));
         case Jpp::Token::OBJECT_START:
-            throw std::runtime_error("Unexpected the start of an object, expected a property name");
+            throw std::runtime_error("Unexpected the start of an object, expected a property name at position: " + std::to_string(index));
         case Jpp::Token::OBJECT_END:
             return object;
         case Jpp::Token::SEPARATOR:
-            throw std::runtime_error("Unexpected separator, expected a property name");
+            throw std::runtime_error("Unexpected separator, expected a property name at position: " + std::to_string(index));
         case Jpp::Token::STRING:
-            current_property = Jpp::parse_string(str, index, str[index]);
+            current_property = parse_string(str, index, str[index]);
             break;
         }
 
-        Jpp::skip_white_spaces(str, index);
+        skip_white_spaces(str, index);
 
         if (str[index] != ':')
-            throw std::runtime_error("Expected ':'");
+            throw std::runtime_error("Expected ':' at position: " + std::to_string(index));
 
         ++index;
 
-        Jpp::skip_white_spaces(str, index);
+        skip_white_spaces(str, index);
 
-        next = Jpp::match_next(str, index);
+        next = match_next(str, index);
 
         switch (next)
         {
         case Jpp::Token::END:
-            throw std::runtime_error("Unexpected the end of the string, a value is expected");
+            throw std::runtime_error("Unexpected the end of the string, a value is expected at position: " + std::to_string(index));
         case Jpp::Token::ARRAY_START:
-            current_value = Jpp::Json(Jpp::parse_array(str, index), JSON_ARRAY);
+            current_value = get_unresolved_object(str, index, false);
             break;
         case Jpp::Token::ARRAY_END:
-            throw std::runtime_error("Unexpected the end of an array, a value is expected");
+            throw std::runtime_error("Unexpected the end of an array, a value is expected at position: " + std::to_string(index));
         case Jpp::Token::OBJECT_START:
-            current_value = Jpp::Json(Jpp::parse_object(str, index), JSON_OBJECT);
+            current_value = get_unresolved_object(str, index, true);
             break;
         case Jpp::Token::OBJECT_END:
-            throw std::runtime_error("Unexpected the end of the object, a value is expected");
+            throw std::runtime_error("Unexpected the end of the object, a value is expected at position: " + std::to_string(index));
         case Jpp::Token::ALPHA:
             if (str[index] == 'n')
-                current_value = Jpp::Json(Jpp::parse_null(str, index), JSON_NULL);
+                current_value = Jpp::Json(parse_null(str, index), Jpp::JSON_NULL);
             else
-                current_value = Jpp::Json(Jpp::parse_boolean(str, index), JSON_BOOLEAN);
+                current_value = Jpp::Json(parse_boolean(str, index), Jpp::JSON_BOOLEAN);
             break;
         case Jpp::Token::NUMBER:
-            current_value = Jpp::Json(Jpp::parse_number(str, index), JSON_NUMBER);
+            current_value = Jpp::Json(parse_number(str, index), Jpp::JSON_NUMBER);
             break;
         case Jpp::Token::STRING:
-            current_value = Jpp::Json(Jpp::parse_string(str, index, str[index]), JSON_STRING);
+            current_value = Jpp::Json(parse_string(str, index, str[index]), Jpp::JSON_STRING);
             break;
         case Jpp::Token::SEPARATOR:
-            throw std::runtime_error("Unexpected separator, a value is expected");
+            throw std::runtime_error("Unexpected separator, a value is expected at position: " + std::to_string(index));
         }
 
-        Jpp::skip_white_spaces(str, index);
+        skip_white_spaces(str, index);
 
-        next = Jpp::match_next(str, index);
+        next = match_next(str, index);
         if (next != Jpp::Token::SEPARATOR && next != Jpp::Token::OBJECT_END)
-            throw std::runtime_error("Expected a ',' or the end of the object");
+            throw std::runtime_error("Expected a ',' or the end of the object at position: " + std::to_string(index));
 
         ++index;
 
-        Jpp::skip_white_spaces(str, index);
+        skip_white_spaces(str, index);
 
         object.insert(std::pair<std::string, Jpp::Json>(current_property, current_value));
 
@@ -279,7 +310,7 @@ std::map<std::string, Jpp::Json> Jpp::parse_object(std::string str, size_t &inde
     }
 }
 
-std::map<std::string, Jpp::Json> Jpp::parse_array(std::string str, size_t &index)
+std::map<std::string, Jpp::Json> Jpp::Json::parse_array(std::string_view str, size_t &index)
 {
     std::map<std::string, Jpp::Json> object;
     Jpp::Token next;
@@ -287,51 +318,51 @@ std::map<std::string, Jpp::Json> Jpp::parse_array(std::string str, size_t &index
     Jpp::Json current_value;
 
     ++index;
-    Jpp::skip_white_spaces(str, index);
+    skip_white_spaces(str, index);
 
     while (true)
     {
-        next = Jpp::match_next(str, index);
+        next = match_next(str, index);
 
         switch (next)
         {
         case Jpp::Token::END:
-            throw std::runtime_error("Unexpected the end of the string, the end of the array is expected");
+            throw std::runtime_error("Unexpected the end of the string, the end of the array is expected at position: " + std::to_string(index));
         case Jpp::Token::ARRAY_START:
-            current_value = Jpp::Json(Jpp::parse_array(str, index), JSON_ARRAY);
+            current_value = Jpp::Json(parse_array(str, index), Jpp::JSON_ARRAY);
             break;
         case Jpp::Token::ARRAY_END:
             return object;
         case Jpp::Token::OBJECT_START:
-            current_value = Jpp::Json(Jpp::parse_object(str, index), JSON_OBJECT);
+            current_value = Jpp::Json(parse_object(str, index), Jpp::JSON_OBJECT);
             break;
         case Jpp::Token::OBJECT_END:
-            throw std::runtime_error("Unexpected '}' token, a value is expected");
+            throw std::runtime_error("Unexpected '}' token, a value is expected at position: " + std::to_string(index));
         case Jpp::Token::ALPHA:
-             if (str[index] == 'n')
-                current_value = Jpp::Json(Jpp::parse_null(str, index), JSON_NULL);
+            if (str[index] == 'n')
+                current_value = Jpp::Json(parse_null(str, index), Jpp::JSON_NULL);
             else
-                current_value = Jpp::Json(Jpp::parse_boolean(str, index), JSON_BOOLEAN);
+                current_value = Jpp::Json(parse_boolean(str, index), Jpp::JSON_BOOLEAN);
             break;
         case Jpp::Token::NUMBER:
-            current_value = Jpp::Json(Jpp::parse_number(str, index), JSON_NUMBER);
+            current_value = Jpp::Json(parse_number(str, index), Jpp::JSON_NUMBER);
             break;
         case Jpp::Token::STRING:
-            current_value = Jpp::Json(Jpp::parse_string(str, index, str[index]), JSON_STRING);
+            current_value = Jpp::Json(parse_string(str, index, str[index]), Jpp::JSON_STRING);
             break;
         case Jpp::Token::SEPARATOR:
-            throw std::runtime_error("Unexpected separator, a value is expected");
+            throw std::runtime_error("Unexpected separator, a value is expected at position: " + std::to_string(index));
         }
 
-        Jpp::skip_white_spaces(str, index);
+        skip_white_spaces(str, index);
 
-        next = Jpp::match_next(str, index);
+        next = match_next(str, index);
         if (next != Jpp::Token::SEPARATOR && next != Jpp::Token::ARRAY_END)
-            throw std::runtime_error("Expected a ',' or the end of the array");
+            throw std::runtime_error("Expected a ',' or the end of the array at position: " + std::to_string(index));
 
         ++index;
 
-        Jpp::skip_white_spaces(str, index);
+        skip_white_spaces(str, index);
 
         object.insert(std::pair<std::string, Jpp::Json>(std::to_string(current_index), current_value));
         ++current_index;
@@ -341,7 +372,7 @@ std::map<std::string, Jpp::Json> Jpp::parse_array(std::string str, size_t &index
     }
 }
 
-Jpp::Token Jpp::match_next(std::string str, size_t &index)
+Jpp::Token Jpp::Json::match_next(std::string_view str, size_t &index)
 {
     if (index >= str.length())
         return Jpp::Token::END;
@@ -365,16 +396,10 @@ Jpp::Token Jpp::match_next(std::string str, size_t &index)
         return Jpp::Token::NUMBER;
     if (isalpha(str[index]))
         return Jpp::Token::ALPHA;
-    throw std::runtime_error("Unexpected " + std::string(1, str[index]) + " token");
+    throw std::runtime_error("Unexpected " + std::string(1, str[index]) + " token at position: " + std::to_string(index));
 }
 
-void Jpp::skip_white_spaces(std::string str, size_t &index)
-{
-    while (index < str.length() && isspace(str[index]))
-        ++index;
-}
-
-std::string Jpp::parse_string(std::string str, size_t &index, char start_with)
+std::string Jpp::Json::parse_string(std::string_view str, size_t &index, char start_with)
 {
     std::string value;
     bool escape = false;
@@ -385,7 +410,7 @@ std::string Jpp::parse_string(std::string str, size_t &index, char start_with)
         if (index >= str.length())
             throw std::runtime_error("Expected the end of the string");
         if (str[index] == '\n')
-            throw std::runtime_error("Unexpected end of the line while parsing the string: '" + value + "'");
+            throw std::runtime_error("Unexpected end of the line while parsing the string: '" + value + "' at position: " + std::to_string(index));
         if (str[index] == '\\' && !escape)
         {
             escape = true;
@@ -432,112 +457,44 @@ std::string Jpp::parse_string(std::string str, size_t &index, char start_with)
     }
 }
 
-std::any Jpp::parse_number(std::string str, size_t &index)
+std::any Jpp::Json::parse_number(std::string_view str, size_t &index)
 {
     size_t start = index;
-    Jpp::next_white_space_or_separator(str, index);
+    next_white_space_or_separator(str, index);
     size_t end = index;
-    std::string substr = str.substr(start, end - start);
+    std::string_view substr = str.substr(start, end - start);
 
-    return std::stod(substr);
+    return std::stod(substr.data());
 }
 
-std::any Jpp::parse_boolean(std::string str, size_t &index)
+std::any Jpp::Json::parse_boolean(std::string_view str, size_t &index)
 {
     size_t start = index;
-    Jpp::next_white_space_or_separator(str, index);
+    next_white_space_or_separator(str, index);
     size_t end = index;
-    std::string substr = str.substr(start, end - start);
+    std::string_view substr = str.substr(start, end - start);
 
     if (substr == "true")
         return true;
     if (substr == "false")
         return false;
-    throw std::runtime_error("Unrecognized token: " + substr);
+    throw std::runtime_error("Unrecognized token: " + std::string(substr.data()) + " at position: " + std::to_string(index));
 }
 
-std::any Jpp::parse_null(std::string str, size_t &index)
+std::any Jpp::Json::parse_null(std::string_view str, size_t &index)
 {
     size_t start = index;
-    Jpp::next_white_space_or_separator(str, index);
+    next_white_space_or_separator(str, index);
     size_t end = index;
-    std::string substr = str.substr(start, end - start);
+    std::string_view substr = str.substr(start, end - start);
 
     if (substr == "null")
         return nullptr;
 
-    throw std::runtime_error("Unrecognized token: " + substr);
+    throw std::runtime_error("Unrecognized token: " + std::string(substr.data()) + " at position: " + std::to_string(index));
 }
 
-std::string Jpp::Json::to_string()
-{
-    switch (this->type)
-    {
-    case JSON_OBJECT:
-        return Jpp::json_object_to_string(*this);
-    case JSON_ARRAY:
-        return Jpp::json_array_to_string(*this);
-    case JSON_STRING:
-        return "\"" +
-               Jpp::str_replace(
-                   Jpp::str_replace(std::any_cast<std::string>(this->value), '"', "\\\""), '\n', "\\n") +
-               "\"";
-    case JSON_BOOLEAN:
-        return std::any_cast<bool>(this->value) ? "true" : "false";
-    case JSON_NUMBER:
-        return std::to_string(std::any_cast<double>(this->value));
-    case JSON_NULL:
-        return "null";
-    }
-    return "";
-}
-
-std::string Jpp::json_object_to_string(Jpp::Json json)
-{
-    std::map<std::string, Jpp::Json> children = json.get_children();
-    if (children.size() == 0) return "{}";
-    std::map<std::string, Jpp::Json>::iterator it;
-    std::string str = "{";
-
-
-    for (it = children.begin(); it != std::prev(children.end()); ++it)
-    {
-        str += "\"" + it->first + "\":";
-        str += it->second.to_string();
-        str += ", ";
-    }
-
-    str += "\"" + std::prev(children.end())->first + "\":";
-    str += std::prev(children.end())->second.to_string();
-
-    return str + "}";
-}
-
-std::string Jpp::json_array_to_string(Jpp::Json json)
-{
-    std::map<std::string, Jpp::Json> children = json.get_children();
-    if (children.size() == 0) return "[]";
-    std::map<std::string, Jpp::Json>::iterator it;
-    std::string str = "[";
-
-    for (it = children.begin(); it != std::prev(children.end()); ++it)
-    {
-        str += it->second.to_string();
-        str += ",";
-    }
-
-    str += std::prev(children.end())->second.to_string();
-
-    return str + "]";
-}
-
-void Jpp::next_white_space_or_separator(std::string str, size_t &index)
-{
-    while (index < str.length() && !isspace(str[index]) && str[index] != '[' && str[index] != '{' && str[index] != ',' && str[index] != ']' && str[index] != '}')
-        ++index;
-}
-
-std::string Jpp::str_replace(std::string original, char old, std::string new_str)
+std::string Jpp::Json::str_replace(std::string_view original, char old, std::string_view new_str)
 {
     std::string str = "";
     for (char ch : original)
@@ -548,16 +505,4 @@ std::string Jpp::str_replace(std::string original, char old, std::string new_str
             str += ch;
     }
     return str;
-}
-
-std::vector<Jpp::Json> Jpp::Json::get_vector()
-{
-    if (type != JSON_ARRAY)
-        throw std::runtime_error("Cannot convert a non-array JSON to a vector");
-    std::vector<Jpp::Json> vct;
-    for (auto json : children)
-    {
-        vct.push_back(json.second);
-    }
-    return vct;
 }
