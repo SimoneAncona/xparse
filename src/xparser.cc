@@ -183,11 +183,11 @@ std::pair<size_t, size_t> Xpp::Parser::get_column_line(std::string_view str, lon
 
 Xpp::AST Xpp::Parser::parse(const std::vector<Xpp::Token> &tokens)
 {
-    Xpp::AST ast;
+    Xpp::AST ast(rules[0].name, std::vector<Xpp::AST>{});
     this->index = 0;
     try
     {
-        analyze_rule(tokens, rules[0]);
+        analyze_rule(ast, tokens, rules[0]);
     }
     catch (const std::exception &e)
     {
@@ -197,16 +197,15 @@ Xpp::AST Xpp::Parser::parse(const std::vector<Xpp::Token> &tokens)
     return ast;
 }
 
-Xpp::AST Xpp::Parser::analyze_rule(const std::vector<Xpp::Token> &tokens, const Rule &rule)
+void Xpp::Parser::analyze_rule(Xpp::AST &ast, const std::vector<Xpp::Token> &tokens, const Rule &rule)
 {
     size_t last_index = index;
     bool error = true;
-    Xpp::AST ast;
     for (auto rule_exp : rule.expressions)
     {
         try
         {
-            ast = analyze_expression(tokens, rule_exp);
+            analyze_expression(ast, tokens, rule_exp);
             error = false;
         }
         catch (const std::exception& e)
@@ -215,26 +214,28 @@ Xpp::AST Xpp::Parser::analyze_rule(const std::vector<Xpp::Token> &tokens, const 
     }
     if (error)
         throw std::runtime_error(get_last_error().message);
-    return ast;
 }
 
-Xpp::AST Xpp::Parser::analyze_expression(const std::vector<Xpp::Token> &tokens, Xpp::RuleExpression &exp)
+void Xpp::Parser::analyze_expression(Xpp::AST &ast, const std::vector<Xpp::Token> &tokens, Xpp::RuleExpression &exp)
 {
     for (auto el : exp)
     {
         switch (el.type)
         {
         case ExpressionElementType::CONSTANT_TERMINAL:
-            return analyze_constant(tokens, el);
+            analyze_constant(ast, tokens, el);
+            return;
         case ExpressionElementType::ALTERNATIVE:
-            return analyze_alternative(tokens, el);
+            analyze_alternative(ast, tokens, el);
+            return;
         case ExpressionElementType::RULE_REFERENCE:
-            return analyze_reference(tokens, el);
+            analyze_reference(ast, tokens, el);
+            return;
         }
     }
 }
 
-Xpp::AST Xpp::Parser::analyze_constant(const std::vector<Xpp::Token> &tokens, const Xpp::ExpressionElement &el)
+void Xpp::Parser::analyze_constant(Xpp::AST &ast, const std::vector<Xpp::Token> &tokens, const Xpp::ExpressionElement &el)
 {
 
 }

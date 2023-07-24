@@ -15,14 +15,14 @@ Xpp::AST::AST()
     this->terminal = false;
 }
 
-Xpp::AST::AST(std::string rule_name, std::vector<AST> children)
+Xpp::AST::AST(const std::string &rule_name, std::vector<AST> children)
 {
     this->terminal = false;
     this->rule_name = rule_name;
     this->children = children;
 }
 
-Xpp::AST::AST(std::string rule_name, std::string terminal_value)
+Xpp::AST::AST(const std::string &rule_name, const std::string &terminal_value)
 {
     this->terminal = true;
     this->rule_name = rule_name;

@@ -36,13 +36,13 @@ namespace Xpp
          * @brief Construct a new AST object specifying the rule name and the children nodes
          * 
          */
-        AST(std::string, std::vector<AST>);
+        AST(const std::string &, std::vector<AST>);
 
         /**
          * @brief Construct a new AST object specifying the rule name and the terminal value
          * 
          */
-        AST(std::string, std::string);
+        AST(const std::string &, const std::string &);
 
         /**
          * @brief Destroy the AST object
@@ -96,5 +96,11 @@ namespace Xpp
         std::vector<AST>::iterator begin();
 
         std::vector<AST>::iterator end();
+
+        /**
+         * @brief Push a new child node
+         * 
+         */
+        void push_child(AST);
     };
 };

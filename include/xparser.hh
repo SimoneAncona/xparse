@@ -83,14 +83,14 @@ namespace Xpp
         Xpp::AST parse(const std::vector<Token> &);
         std::vector<Token> get_tokens(const std::string &, TerminalRule);
         std::pair<size_t, size_t> get_column_line(std::string_view, long long);
-        Xpp::AST analyze_rule(const std::vector<Token> &, const Rule &);
-        Xpp::AST analyze_expression(const std::vector<Token> &, RuleExpression &);
-        Xpp::AST analyze_alternative(const std::vector<Token> &, const ExpressionElement &);
-        Xpp::AST analyze_reference(const std::vector<Token> &, const ExpressionElement &);
-        Xpp::AST analyze_zero_or_one(const std::vector<Token> &, const ExpressionElement &);
-        Xpp::AST analyze_zero_or_more(const std::vector<Token> &, const ExpressionElement &);
-        Xpp::AST analyze_one_or_more(const std::vector<Token> &, const ExpressionElement &);
-        Xpp::AST analyze_constant(const std::vector<Token> &, const ExpressionElement &);
+        void analyze_rule(Xpp::AST &, const std::vector<Token> &, const Rule &);
+        void analyze_expression(Xpp::AST &, const std::vector<Token> &, RuleExpression &);
+        void analyze_alternative(Xpp::AST &, const std::vector<Token> &, const ExpressionElement &);
+        void analyze_reference(Xpp::AST &, const std::vector<Token> &, const ExpressionElement &);
+        void analyze_zero_or_one(Xpp::AST &, const std::vector<Token> &, const ExpressionElement &);
+        void analyze_zero_or_more(Xpp::AST &, const std::vector<Token> &, const ExpressionElement &);
+        void analyze_one_or_more(Xpp::AST &, const std::vector<Token> &, const ExpressionElement &);
+        void analyze_constant(Xpp::AST &, const std::vector<Token> &, const ExpressionElement &);
 
     public:
         /**
