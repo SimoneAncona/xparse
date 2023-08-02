@@ -72,7 +72,7 @@ void Xpp::Parser::generate_from_json()
     generate_rules(rulesArray);
 }
 
-void Xpp::Parser::generate_terminal_rules(std::map<std::string, Jpp::Json> terminalsArray)
+void Xpp::Parser::generate_terminal_rules(const std::map<std::string, Jpp::Json> &terminalsArray)
 {
     for (auto terminal : terminalsArray)
     {
@@ -87,35 +87,75 @@ void Xpp::Parser::generate_terminal_rules(std::map<std::string, Jpp::Json> termi
     }
 }
 
-void Xpp::Parser::generate_rules(std::map<std::string, Jpp::Json> rulesArray)
+void Xpp::Parser::generate_rules(const std::map<std::string, Jpp::Json> &rulesArray)
 {
-    Xpp::Rule rule;
+    std::set<std::pair<std::string, std::string>> referenced_rule_names;
+    std::string rule_name;
     for (auto ruleJSON : rulesArray)
     {
         try
         {
-            rule = Xpp::Rule{std::any_cast<std::string>(ruleJSON.second["name"].get_value()), parse_expressions(ruleJSON.second["expressions"].get_children())};
-            this->rules.push_back(rule);
+            rule_name = std::any_cast<std::string>(ruleJSON.second["name"].get_value());
+            this->rules.push_back(Xpp::Rule{rule_name, parse_expressions(ruleJSON.second["expressions"].get_children(), referenced_rule_names, rule_name)});
         }
         catch (const std::runtime_error e)
         {
             throw std::runtime_error("Error while parsing the array of rules, go to https://github.com/SimoneAncona/xparser#define-a-grammar for more:\n\t" + std::string(e.what()));
         }
     }
+
+    for (auto rule : referenced_rule_names)
+    {
+        if (find_rule(rule.first) == nullptr && find_terminal_rule(rule.first) == nullptr)
+            throw std::runtime_error("Undefined reference to the rule '" + rule.first + "' in the rule '" + rule.second + "'");
+    }
+
     if (rules.size() == 0)
         throw std::runtime_error("No rules were specified. You must specify at least one rule");
 }
 
-std::vector<Xpp::RuleExpression> Xpp::Parser::parse_expressions(std::map<std::string, Jpp::Json> expressions)
+std::vector<Xpp::RuleExpression> Xpp::Parser::parse_expressions(const std::map<std::string, Jpp::Json> &expressions, std::set<std::pair<std::string, std::string>> &referenced_rules, const std::string &rule_name)
 {
     std::vector<Xpp::RuleExpression> parsed_expressions;
+    Xpp::RuleExpression temp_expression;
 
     for (auto exp : expressions)
     {
-        parsed_expressions.push_back(Xpp::RuleExpression(any_cast<std::string>(exp.second.get_value())));
+        temp_expression = Xpp::RuleExpression(any_cast<std::string>(exp.second.get_value()));
+        get_reference_names(temp_expression, referenced_rules, rule_name);
+        parsed_expressions.push_back(temp_expression);
     }
 
     return parsed_expressions;
+}
+
+void Xpp::Parser::get_reference_names(Xpp::RuleExpression &exp, std::set<std::pair<std::string, std::string>> &references, const std::string &rule_name)
+{
+    for (auto el : exp.get_elements())
+    {
+        if (el.type == ExpressionElementType::RULE_REFERENCE)
+            references.insert(std::pair<std::string, std::string>(el.value, rule_name));
+    }
+}
+
+Xpp::Rule *Xpp::Parser::find_rule(const std::string &name)
+{
+    for (auto &rule : rules)
+    {
+        if (rule.name == name)
+            return &rule;
+    }
+    return nullptr;
+}
+
+Xpp::TerminalRule *Xpp::Parser::find_terminal_rule(const std::string &name)
+{
+    for (auto &t : terminals)
+    {
+        if (t.name == name)
+            return &t;
+    }
+    return nullptr;
 }
 
 std::vector<Xpp::Token> Xpp::Parser::tokenize(const std::string &str)
@@ -184,14 +224,14 @@ std::pair<size_t, size_t> Xpp::Parser::get_column_line(std::string_view str, lon
 Xpp::AST Xpp::Parser::parse(const std::vector<Xpp::Token> &tokens)
 {
     Xpp::AST ast(rules[0].name, std::vector<Xpp::AST>{});
-    this->index = 0;
+    this->parse_index = {0, 0};
     try
     {
         analyze_rule(ast, tokens, rules[0]);
     }
-    catch (const std::exception &e)
+    catch (Xpp::SyntaxErrorException &e)
     {
-        throw std::runtime_error("An error occurred while parsing the string:\n\t" + std::string(e.what()) + "\nUse 'get_error_stack' or 'get_last_error' for more.");
+        throw Xpp::SyntaxErrorException("An error occurred while parsing the string:\n\t" + std::string(e.what()) + "\nUse 'get_error_stack' or 'get_last_error' for more.");
     }
 
     return ast;
@@ -199,43 +239,73 @@ Xpp::AST Xpp::Parser::parse(const std::vector<Xpp::Token> &tokens)
 
 void Xpp::Parser::analyze_rule(Xpp::AST &ast, const std::vector<Xpp::Token> &tokens, const Rule &rule)
 {
-    size_t last_index = index;
+    Index last_index = parse_index;
     bool error = true;
     for (auto rule_exp : rule.expressions)
     {
-        try
-        {
-            analyze_expression(ast, tokens, rule_exp);
+        if (!analyze_expression(ast, tokens, rule_exp, rule.name) && error)
             error = false;
-        }
-        catch (const std::exception& e)
-        {
-        }
     }
     if (error)
-        throw std::runtime_error(get_last_error().message);
+        throw Xpp::SyntaxErrorException(get_last_error().message);
 }
 
-void Xpp::Parser::analyze_expression(Xpp::AST &ast, const std::vector<Xpp::Token> &tokens, Xpp::RuleExpression &exp)
+bool Xpp::Parser::analyze_expression(Xpp::AST &ast, const std::vector<Xpp::Token> &tokens, Xpp::RuleExpression &exp, const std::string &rule_name)
 {
     for (auto el : exp)
     {
         switch (el.type)
         {
         case ExpressionElementType::CONSTANT_TERMINAL:
-            analyze_constant(ast, tokens, el);
-            return;
+            return analyze_constant(ast, tokens, el, rule_name);
         case ExpressionElementType::ALTERNATIVE:
-            analyze_alternative(ast, tokens, el);
-            return;
+            return analyze_alternative(ast, tokens, el, rule_name);
         case ExpressionElementType::RULE_REFERENCE:
-            analyze_reference(ast, tokens, el);
-            return;
+            return analyze_reference(ast, tokens, el, rule_name);
         }
     }
+    return false;
 }
 
-void Xpp::Parser::analyze_constant(Xpp::AST &ast, const std::vector<Xpp::Token> &tokens, const Xpp::ExpressionElement &el)
+bool Xpp::Parser::analyze_constant(Xpp::AST &ast, const std::vector<Xpp::Token> &tokens, const Xpp::ExpressionElement &el, const std::string &rule_name)
 {
+    for (size_t i = 0; i < el.value.length(); i++)
+    {
+        if (el.value[i] != tokens[parse_index.token_index].value[parse_index.char_index])
+        {
+            error_stack.push({EXPECTED_TOKEN, "'" + std::string(1, el.value[i]) + "' was expected", tokens[parse_index.token_index].index, tokens[parse_index.token_index].column, tokens[parse_index.token_index].line});
+            return false;
+        }
+    }
+    ast.push_child({rule_name, el.value});
+    return true;
+}
 
+bool Xpp::Parser::analyze_reference(Xpp::AST &ast, const std::vector<Xpp::Token> &tokens, const Xpp::ExpressionElement &el, const std::string &rule_name)
+{
+    Xpp::Rule *rule = find_rule(el.references[0].reference_to);
+    Xpp::TerminalRule *terminal = find_terminal_rule(el.references[0].reference_to);
+    if (rule == nullptr)
+    {
+        if (tokens[parse_index.token_index].from.name == terminal->name)
+            return true;
+        return false;
+    }
+
+    try
+    {
+        analyze_rule(ast, tokens, *rule);
+        return true;
+    }
+    catch (const Xpp::SyntaxErrorException e)
+    {
+        error_stack.push({UNMATCHED_RULE, "Cannot match '" + rule->name + "' rule. Use 'get_error_stack' to get the error stack.", tokens[parse_index.token_index].index, tokens[parse_index.token_index].column, tokens[parse_index.token_index].line});
+        return false;
+    }
+    return false;
+}
+
+bool Xpp::Parser::analyze_alternative(Xpp::AST &ast, const std::vector<Xpp::Token> &tokens, const Xpp::ExpressionElement &el, const std::string &rule_name)
+{
+    
 }

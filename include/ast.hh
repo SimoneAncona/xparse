@@ -101,6 +101,9 @@ namespace Xpp
          * @brief Push a new child node
          * 
          */
-        void push_child(AST);
+        inline void push_child(AST node)
+        {
+            children.push_back(node);
+        }
     };
 };

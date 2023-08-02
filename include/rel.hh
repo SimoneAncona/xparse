@@ -9,6 +9,8 @@
  * 
  */
 
+#pragma once
+
 #include <string>
 #include <vector>
 #include <stdexcept>
@@ -66,6 +68,7 @@ namespace Xpp
         bool boundary_flag = false;
         bool ignore_spaces = false;
         size_t index = 0;
+        std::string rule_name;
 
         void parse_flags(std::string);
         void parse_expression(std::string);
@@ -76,7 +79,7 @@ namespace Xpp
     public:
         RuleExpression() = default;
         ~RuleExpression() = default;
-        RuleExpression(std::string);
+        RuleExpression(const std::string &);
 
         bool is_boundary_set() noexcept;
         bool is_ignore_spaces_set() noexcept;

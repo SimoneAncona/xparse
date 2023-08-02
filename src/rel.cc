@@ -50,7 +50,7 @@ Xpp::ExpressionElement &Xpp::RuleExpression::operator[](size_t index) noexcept
     return this->elements[index];
 }
 
-Xpp::RuleExpression::RuleExpression(std::string rule_expression)
+Xpp::RuleExpression::RuleExpression(const std::string &rule_expression)
 {
     if (rule_expression.starts_with('['))
     {
@@ -190,7 +190,7 @@ Xpp::Quantifier Xpp::RuleExpression::parse_quantifier(std::string exp, bool is_a
 
     std::vector<std::string> values = {"", ""};
     size_t current_value = 0;
-    
+
     while (ch != '}')
     {
         if (ch == ':')
@@ -202,7 +202,7 @@ Xpp::Quantifier Xpp::RuleExpression::parse_quantifier(std::string exp, bool is_a
 
         if (!isdigit(ch))
             throw std::runtime_error("Unexpected token '" + std::string(1, ch) + "' in {} quantifier");
-        
+
         values[current_value] += ch;
         ch = ParserTools::get_next(exp, index);
     }
@@ -220,7 +220,6 @@ Xpp::Quantifier Xpp::RuleExpression::parse_quantifier(std::string exp, bool is_a
     if (values[0] == "")
         throw std::runtime_error("Expected a value after '{'");
     return Quantifier{EXACT_VALUE, std::stoull(values[0]), 0};
-
 }
 
 void Xpp::RuleExpression::parse_constant_term(std::string exp)
