@@ -100,9 +100,11 @@ namespace Xpp
         Jpp::Json grammar;
         std::vector<Rule> rules;
         std::vector<TerminalRule> terminals = {{"integer", "[-|+]?\\d+"}, {"identifier", "[_a-zA-Z][_a-zA-Z0-9]*"}, {"real", "[+|-]?\\d+(\\.\\d+)?"}};
+        const std::vector<std::string> implicit_terminals = {"alnum", "digit", "alpha", "space", "hexDigit", "octDigit", "eof", "newLine", "any"};
         std::stack<SyntaxError> error_stack;
 
         Index parse_index;
+        std::string input;
 
         void generate_from_json();
         void generate_terminal_rules(const std::map<std::string, Jpp::Json> &);
@@ -120,9 +122,12 @@ namespace Xpp
         bool analyze_expression(Xpp::AST &, const std::vector<Token> &, RuleExpression &, const std::string &);
         bool analyze_alternative(Xpp::AST &, const std::vector<Token> &, const ExpressionElement &, const std::string &);
         bool analyze_reference(Xpp::AST &, const std::vector<Token> &, const ExpressionElement &, const std::string &);
+        bool analyze_single_reference(Xpp::AST &, const std::vector<Token> &, const ExpressionElement &, const std::string &);
         bool analyze_zero_or_one(Xpp::AST &, const std::vector<Token> &, const ExpressionElement &, const std::string &);
         bool analyze_zero_or_more(Xpp::AST &, const std::vector<Token> &, const ExpressionElement &, const std::string &);
         bool analyze_one_or_more(Xpp::AST &, const std::vector<Token> &, const ExpressionElement &, const std::string &);
+        bool analyze_exact_quantity(Xpp::AST &, const std::vector<Token> &, const ExpressionElement &, const std::string &);
+        bool analyze_exact_range(Xpp::AST &, const std::vector<Token> &, const ExpressionElement &, const std::string &);
         bool analyze_constant(Xpp::AST &, const std::vector<Token> &, const ExpressionElement &, const std::string &);
 
     public:

@@ -106,7 +106,7 @@ void Xpp::Parser::generate_rules(const std::map<std::string, Jpp::Json> &rulesAr
 
     for (auto rule : referenced_rule_names)
     {
-        if (find_rule(rule.first) == nullptr && find_terminal_rule(rule.first) == nullptr)
+        if (find_rule(rule.first) == nullptr && find_terminal_rule(rule.first) == nullptr && std::find(implicit_terminals.begin(), implicit_terminals.end(), rule.first) == std::end(implicit_terminals))
             throw std::runtime_error("Undefined reference to the rule '" + rule.first + "' in the rule '" + rule.second + "'");
     }
 
@@ -134,7 +134,7 @@ void Xpp::Parser::get_reference_names(Xpp::RuleExpression &exp, std::set<std::pa
     for (auto el : exp.get_elements())
     {
         if (el.type == ExpressionElementType::RULE_REFERENCE)
-            references.insert(std::pair<std::string, std::string>(el.value, rule_name));
+            references.insert(std::pair<std::string, std::string>(el.references[0].reference_to, rule_name));
     }
 }
 
@@ -239,7 +239,6 @@ Xpp::AST Xpp::Parser::parse(const std::vector<Xpp::Token> &tokens)
 
 void Xpp::Parser::analyze_rule(Xpp::AST &ast, const std::vector<Xpp::Token> &tokens, const Rule &rule)
 {
-    Index last_index = parse_index;
     bool error = true;
     for (auto rule_exp : rule.expressions)
     {
@@ -276,6 +275,9 @@ bool Xpp::Parser::analyze_constant(Xpp::AST &ast, const std::vector<Xpp::Token> 
             error_stack.push({EXPECTED_TOKEN, "'" + std::string(1, el.value[i]) + "' was expected", tokens[parse_index.token_index].index, tokens[parse_index.token_index].column, tokens[parse_index.token_index].line});
             return false;
         }
+        parse_index.char_index++;
+        if (parse_index.char_index >= tokens[parse_index.token_index].value.length())
+            parse_index = {parse_index.token_index + 1, 0};
     }
     ast.push_child({rule_name, el.value});
     return true;
@@ -283,12 +285,36 @@ bool Xpp::Parser::analyze_constant(Xpp::AST &ast, const std::vector<Xpp::Token> 
 
 bool Xpp::Parser::analyze_reference(Xpp::AST &ast, const std::vector<Xpp::Token> &tokens, const Xpp::ExpressionElement &el, const std::string &rule_name)
 {
+    switch (el.references[0].quantifier.type)
+    {
+        case NONE:
+            return analyze_single_reference(ast, tokens, el, rule_name);
+        case ZERO_OR_ONE:
+            return analyze_zero_or_one(ast, tokens, el, rule_name);
+        case ZERO_OR_MORE:
+            return analyze_zero_or_more(ast, tokens, el, rule_name);
+        case ONE_OR_MORE:
+            return analyze_one_or_more(ast, tokens, el, rule_name);
+        case EXACT_VALUE:
+            return analyze_exact_quantity(ast, tokens, el, rule_name);
+        case EXACT_RANGE:
+            return analyze_exact_range(ast, tokens, el, rule_name);
+    }
+    return false;
+}
+
+bool Xpp::Parser::analyze_single_reference(Xpp::AST &ast, const std::vector<Xpp::Token> &tokens, const Xpp::ExpressionElement &el, const std::string &rule_name)
+{
     Xpp::Rule *rule = find_rule(el.references[0].reference_to);
     Xpp::TerminalRule *terminal = find_terminal_rule(el.references[0].reference_to);
     if (rule == nullptr)
     {
         if (tokens[parse_index.token_index].from.name == terminal->name)
+        {
+            ast.push_child({rule_name, tokens[parse_index.token_index].value});
+            this->parse_index = {parse_index.token_index + 1, 0};
             return true;
+        }
         return false;
     }
 
@@ -307,5 +333,80 @@ bool Xpp::Parser::analyze_reference(Xpp::AST &ast, const std::vector<Xpp::Token>
 
 bool Xpp::Parser::analyze_alternative(Xpp::AST &ast, const std::vector<Xpp::Token> &tokens, const Xpp::ExpressionElement &el, const std::string &rule_name)
 {
-    
+    Index last_index = parse_index;
+    for (auto ref : el.references)
+    {
+        parse_index = last_index;
+        if (analyze_reference(ast, tokens, {RULE_REFERENCE, "", {ref}}, rule_name))
+        {
+            return true;
+        }
+    }
+
+    error_stack.push({UNMATCHED_RULE, "No match found on the alternative in the rule '" + rule_name + "'. Use 'get_error_stack' to get the error stack.", tokens[parse_index.token_index].index, tokens[parse_index.token_index].column, tokens[parse_index.token_index].line});
+    return false;
 }
+
+bool Xpp::Parser::analyze_zero_or_one(Xpp::AST &ast, const std::vector<Xpp::Token> &tokens, const Xpp::ExpressionElement &el, const std::string &rule_name)
+{
+    Index last_index = parse_index;
+    if (analyze_single_reference(ast, tokens, el, rule_name))
+    {
+        return true;
+    }
+    parse_index = last_index;
+    return true;
+}
+
+bool Xpp::Parser::analyze_zero_or_more(Xpp::AST &ast, const std::vector<Xpp::Token> &tokens, const Xpp::ExpressionElement &el, const std::string &rule_name)
+{
+    Index last_index = parse_index;
+    while (analyze_single_reference(ast, tokens, el, rule_name))
+    {
+        last_index = parse_index;
+    }
+    parse_index = last_index;
+    return true;
+}
+
+bool Xpp::Parser::analyze_one_or_more(Xpp::AST &ast, const std::vector<Xpp::Token> &tokens, const Xpp::ExpressionElement &el, const std::string &rule_name)
+{
+    Index last_index = parse_index;
+    bool error = true;
+    while (analyze_single_reference(ast, tokens, el, rule_name))
+    {
+        last_index = parse_index;
+        error = false;
+    }
+    parse_index = last_index;
+    if (error)
+    {
+        error_stack.push({UNMATCHED_RULE, "'" + rule_name + "' was expected at least once. Use 'get_error_stack' to get the error stack.", tokens[parse_index.token_index].index, tokens[parse_index.token_index].column, tokens[parse_index.token_index].line});
+        return false;
+    }
+    return true;
+}
+
+bool Xpp::Parser::analyze_exact_quantity(Xpp::AST &ast, const std::vector<Xpp::Token> &tokens, const Xpp::ExpressionElement &el, const std::string &rule_name)
+{
+    Index last_index = parse_index;
+    size_t i = 0;
+    while (analyze_single_reference(ast, tokens, el, rule_name))
+    {
+        i++;
+    }
+    parse_index = last_index;
+    return true;
+}
+
+bool Xpp::Parser::analyze_exact_range(Xpp::AST &ast, const std::vector<Xpp::Token> &tokens, const Xpp::ExpressionElement &el, const std::string &rule_name)
+{
+    Index last_index = parse_index;
+    size_t i = 0;
+    while (analyze_single_reference(ast, tokens, el, rule_name))
+    {
+        i++;
+    }
+    parse_index = last_index;
+    return true;
+} 

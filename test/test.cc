@@ -10,6 +10,7 @@ int main(int argc, char **argv)
         file.open("json/grammar1.json");
         Xpp::Parser parser(file);
         Xpp::AST ast = parser.generate_ast("def \"asdfasdf\"");
+        return 0;
     }
     catch (const std::exception e)
     {
